@@ -1,0 +1,20 @@
+services:
+  gnucash:
+    build: .
+    image: docker-gnucash:latest
+    container_name: gnucash
+    restart: unless-stopped
+    ports:
+      - "5800:5800"
+      # Port 5900 is NOT exposed to ensure access is only via the secure web interface.
+    volumes:
+      - "./config:/config:rw"
+      - "./data:/data:rw"
+    environment:
+      - SECURE_CONNECTION=1
+      - TZ=America/Los_Angeles
+      # Set user/group ID to match host user if needed (optional)
+      - USER_ID=1000
+      - GROUP_ID=1000
+      # Generate a self-signed certificate if one doesn't exist.
+      # To use your own, place them in /config/certs
