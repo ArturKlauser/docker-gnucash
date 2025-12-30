@@ -40,7 +40,8 @@ jobs:
           images: ${{ secrets.DOCKERHUB_USERNAME }}/gnucash
           tags: |
             type=raw,value=baseimage-gui-${{ env.BASEIMAGE_VERSION }}-gnucash-${{ env.GNUCASH_VERSION }}
-            type=ref,event=branch
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
+            type=ref,event=branch,enable=${{ github.ref != 'refs/heads/main' }}
             type=ref,event=pr
 
       - name: Build and push
