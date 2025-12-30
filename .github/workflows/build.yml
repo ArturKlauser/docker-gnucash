@@ -13,6 +13,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      BASEIMAGE_VERSION: alpine-3.23
+      GNUCASH_VERSION: 5.13
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -36,7 +39,7 @@ jobs:
         with:
           images: ${{ secrets.DOCKERHUB_USERNAME }}/gnucash
           tags: |
-            type=raw,value=baseimage-alpine-3.23-gnucash-5.13
+            type=raw,value=baseimage-${{ env.BASEIMAGE_VERSION }}-gnucash-${{ env.GNUCASH_VERSION }}
             type=ref,event=branch
             type=ref,event=pr
             type=semver,pattern={{version}}
@@ -52,5 +55,5 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
-            BASEIMAGE_VERSION=alpine-3.23
-            GNUCASH_VERSION=5.13
+            BASEIMAGE_VERSION=${{ env.BASEIMAGE_VERSION }}
+            GNUCASH_VERSION=${{ env.GNUCASH_VERSION }}

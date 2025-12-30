@@ -6,7 +6,6 @@ ARG GNUCASH_VERSION=5.13
 FROM jlesage/baseimage-gui:${BASEIMAGE_VERSION}-v4
 
 # Define working variables.
-ARG BASEIMAGE_VERSION
 ARG GNUCASH_VERSION
 
 # Set the name of the application.
@@ -19,7 +18,7 @@ ENV XDG_CACHE_HOME=/config/xdg/cache
 # Install GnuCash.
 # We explicitly install the version matching the argument to ensure consistency.
 RUN apk add --no-cache \
-        gnucash=${GNUCASH_VERSION}-r0 \
+        gnucash=~${GNUCASH_VERSION} \
         py3-gnucash \
         py3-gobject3 \
         py3-cairo \
