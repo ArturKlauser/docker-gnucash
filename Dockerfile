@@ -21,8 +21,13 @@ ENV XDG_CACHE_HOME=/config/xdg/cache
 
 # Install GnuCash.
 # We explicitly install the version matching the argument to ensure consistency.
+# We also install:
+# - gnucash-doc: Documentation.
+# - gnucash-lang: Localization files.
 RUN apk add --no-cache \
         gnucash=~${GNUCASH_VERSION} \
+        gnucash-doc=~${GNUCASH_VERSION} \
+        gnucash-lang=~${GNUCASH_VERSION} \
         py3-gnucash \
         py3-gobject3 \
         py3-cairo \
