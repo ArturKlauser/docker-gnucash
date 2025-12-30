@@ -32,6 +32,9 @@ RUN apk add --no-cache \
 # Copy the start script.
 COPY startapp.sh /startapp.sh
 
+# Copy the rootfs directory.
+COPY rootfs/ /
+
 # Set the name of the application.
 RUN set-cont-env APP_NAME "GnuCash"
 
