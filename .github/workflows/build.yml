@@ -34,8 +34,9 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ secrets.DOCKERHUB_USERNAME }}/docker-gnucash
+          images: ${{ secrets.DOCKERHUB_USERNAME }}/gnucash
           tags: |
+            type=raw,value=baseimage-alpine-3.23-gnucash-5.13
             type=ref,event=branch
             type=ref,event=pr
             type=semver,pattern={{version}}
@@ -50,3 +51,6 @@ jobs:
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            BASEIMAGE_VERSION=alpine-3.23
+            GNUCASH_VERSION=5.13

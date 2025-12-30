@@ -1,12 +1,12 @@
 # Docker GnuCash
 
-This repository contains a Dockerfile to run the latest version of GnuCash (from Alpine Edge) in a container with a web-based GUI, accessible via HTTPS.
+This repository contains a Dockerfile to run GnuCash (from Alpine Linux stable) in a container with a web-based GUI, accessible via HTTPS.
 
 Based on [jlesage/docker-baseimage-gui](https://github.com/jlesage/docker-baseimage-gui).
 
 ## Features
 
-*   **Latest GnuCash**: Installs GnuCash from the Alpine Linux Edge repository.
+*   **Latest GnuCash**: Installs GnuCash 5.13 on Alpine Linux 3.23.
 *   **Web Interface**: Access the GnuCash GUI through your web browser.
 *   **Secure Access**: Web interface is forced to HTTPS.
 *   **Multi-Arch**: Supports `linux/amd64` and `linux/arm64`.
@@ -37,7 +37,7 @@ docker run -d \
     -v $(pwd)/config:/config:rw \
     -v $(pwd)/data:/data:rw \
     -e SECURE_CONNECTION=1 \
-    your-username/docker-gnucash:latest
+    your-username/gnucash:baseimage-alpine-3.23-gnucash-5.13
 ```
 
 ## Security

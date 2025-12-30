@@ -1,5 +1,13 @@
+# Define build arguments.
+ARG BASEIMAGE_VERSION=alpine-3.23
+ARG GNUCASH_VERSION=5.13
+
 # Pull base image.
-FROM jlesage/baseimage-gui:alpine-3.20-v4
+FROM jlesage/baseimage-gui:${BASEIMAGE_VERSION}-v4
+
+# Define working variables.
+ARG BASEIMAGE_VERSION
+ARG GNUCASH_VERSION
 
 # Set the name of the application.
 ENV APP_NAME="GnuCash"
@@ -8,13 +16,10 @@ ENV XDG_CONFIG_HOME=/config/xdg/config
 ENV XDG_DATA_HOME=/config/xdg/data
 ENV XDG_CACHE_HOME=/config/xdg/cache
 
-# Install GnuCash from Alpine Edge.
-# We need both main and community repositories from edge for gnucash and its dependencies.
-RUN echo "http://dl-cdn.alpinelinux.org/alpine/edge/main" >> /etc/apk/repositories && \
-    echo "http://dl-cdn.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories && \
-    apk upgrade --no-cache && \
-    apk add --no-cache \
-        gnucash \
+# Install GnuCash.
+# We explicitly install the version matching the argument to ensure consistency.
+RUN apk add --no-cache \
+        gnucash=${GNUCASH_VERSION}-r0 \
         py3-gnucash \
         py3-gobject3 \
         py3-cairo \
