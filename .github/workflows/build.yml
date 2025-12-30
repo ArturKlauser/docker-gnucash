@@ -13,9 +13,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    env:
-      BASEIMAGE_VERSION: alpine-3.23-v4
-      GNUCASH_VERSION: 5.13
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -39,9 +36,12 @@ jobs:
         with:
           images: ${{ secrets.DOCKERHUB_USERNAME }}/gnucash
           tags: |
-            type=raw,value=baseimage-gui-${{ env.BASEIMAGE_VERSION }}-gnucash-${{ env.GNUCASH_VERSION }}
+            type=raw,value=baseimage-alpine-3.23-gnucash-5.13
             type=ref,event=branch
             type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=sha
 
       - name: Build and push
         uses: docker/build-push-action@v5
@@ -52,5 +52,5 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
-            BASEIMAGE_VERSION=${{ env.BASEIMAGE_VERSION }}
-            GNUCASH_VERSION=${{ env.GNUCASH_VERSION }}
+            BASEIMAGE_VERSION=alpine-3.23
+            GNUCASH_VERSION=5.13
