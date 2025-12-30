@@ -24,18 +24,27 @@ ENV XDG_CACHE_HOME=/config/xdg/cache
 # We also install:
 # - gnucash-doc: Documentation.
 # - gnucash-lang: Localization files.
-# - perl-finance-quote: For online stock quotes (requires edge/testing repo).
+# - Finance::Quote: For online stock quotes (installed via CPAN to avoid edge repo).
 RUN apk add --no-cache \
-        --repository http://dl-cdn.alpinelinux.org/alpine/edge/testing \
         gnucash=~${GNUCASH_VERSION} \
         gnucash-doc=~${GNUCASH_VERSION} \
         gnucash-lang=~${GNUCASH_VERSION} \
-        perl-finance-quote \
+        perl \
         py3-gnucash \
         py3-gobject3 \
         py3-cairo \
         adwaita-icon-theme \
-        ttf-dejavu
+        ttf-dejavu \
+    && apk add --no-cache --virtual .build-deps \
+        perl-app-cpanminus \
+        make \
+        gcc \
+        musl-dev \
+        perl-dev \
+        openssl-dev \
+        zlib-dev \
+    && cpanm --notest Finance::Quote \
+    && apk del .build-deps
 
 # Copy the start script.
 COPY startapp.sh /startapp.sh
