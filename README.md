@@ -36,7 +36,6 @@ docker run -d \
     -p 5800:5800 \
     -v $(pwd)/config:/config:rw \
     -v $(pwd)/data:/data:rw \
-    -e SECURE_CONNECTION=1 \
     arturklauser/gnucash:baseimage-gui-alpine-3.23-v4-gnucash-5.13
 ```
 
