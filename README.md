@@ -6,7 +6,7 @@ Based on [jlesage/docker-baseimage-gui](https://github.com/jlesage/docker-baseim
 
 ## Features
 
-*   **Versions**: Installs GnuCash 5.13 on baseimage-gui:alpine-3.23-v4.
+*   **Versions**: Runs GnuCash 5.13 on baseimage-gui:alpine-3.23-v4.
 *   **Web Interface**: Access the GnuCash GUI through your web browser.
 *   **Secure Access**: Web interface is forced to HTTPS.
 *   **Multi-Arch**: Supports `linux/amd64` and `linux/arm64`.
