@@ -21,8 +21,16 @@ ENV XDG_CACHE_HOME=/config/xdg/cache
 
 # Install GnuCash.
 # We explicitly install the version matching the argument to ensure consistency.
+# We also install:
+# - gnucash-doc: Documentation.
+# - gnucash-lang: Localization files.
+# - perl-finance-quote: For online stock quotes (requires edge/testing repo).
 RUN apk add --no-cache \
+        --repository http://dl-cdn.alpinelinux.org/alpine/edge/testing \
         gnucash=~${GNUCASH_VERSION} \
+        gnucash-doc=~${GNUCASH_VERSION} \
+        gnucash-lang=~${GNUCASH_VERSION} \
+        perl-finance-quote \
         py3-gnucash \
         py3-gobject3 \
         py3-cairo \
