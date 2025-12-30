@@ -1,7 +1,7 @@
 services:
   gnucash:
     build: .
-    image: docker-gnucash:latest
+    image: arturklauser/gnucash:latest
     container_name: gnucash
     restart: unless-stopped
     ports:
