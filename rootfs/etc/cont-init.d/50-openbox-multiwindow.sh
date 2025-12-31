@@ -6,4 +6,4 @@
 sed -i '/Main window/,/<\/application>/ {
     s/\(\s*\)<decor>.*/\1<decor>yes<\/decor>/
     s/\(\s*\)<maximized>.*/\1<maximized>false<\/maximized>/
-}' /var/run/openbox/rc.xml > /data/rc.xml.new
+}' /var/run/openbox/rc.xml
