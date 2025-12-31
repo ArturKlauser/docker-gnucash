@@ -28,24 +28,21 @@ ENV XDG_CACHE_HOME=/config/xdg/cache
 # - python3-gnucash: Python bindings.
 # - fonts-dejavu: Fonts for the GUI.
 # - adwaita-icon-theme: Icon theme.
+
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-        gnupg \
-        ca-certificates \
-        wget && \
-    mkdir -p /etc/apt/keyrings && \
-    wget -qO- https://keyserver.ubuntu.com/pks/lookup?fingerprint=on\&op=get\&search=0x077468D5684973C4BA12B7A7C0DCB0221512D167 | gpg --dearmor -o /etc/apt/keyrings/gnucash.gpg && \
-    echo "deb [signed-by=/etc/apt/keyrings/gnucash.gpg] https://ppa.launchpadcontent.net/gnucash/ppa/ubuntu noble main" > /etc/apt/sources.list.d/gnucash.list && \
+        software-properties-common && \
+    add-apt-repository -y ppa:gnucash/ppa && \
     apt-get update && \
     apt-get install -y --no-install-recommends \
-        gnucash=1:${GNUCASH_VERSION}* \
-        gnucash-common=1:${GNUCASH_VERSION}* \
+        gnucash \
+        gnucash-common \
         gnucash-docs \
-        python3-gnucash=1:${GNUCASH_VERSION}* \
+        python3-gnucash \
         libfinance-quote-perl \
         fonts-dejavu \
         adwaita-icon-theme && \
-    apt-get remove -y gnupg wget && \
+    apt-get remove -y software-properties-common && \
     apt-get autoremove -y && \
     rm -rf /var/lib/apt/lists/*
 
