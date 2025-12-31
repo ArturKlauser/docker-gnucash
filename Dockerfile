@@ -29,22 +29,22 @@ ENV XDG_CACHE_HOME=/config/xdg/cache
 # - fonts-dejavu: Fonts for the GUI.
 # - adwaita-icon-theme: Icon theme.
 
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-        software-properties-common && \
-    add-apt-repository -y ppa:gnucash/ppa && \
-    apt-get update && \
-    apt-get install -y --no-install-recommends \
+# Split RUN commands for debugging
+RUN apt-get update
+RUN apt-get install -y --no-install-recommends software-properties-common
+RUN add-apt-repository -y ppa:gnucash/ppa
+RUN apt-get update
+RUN apt-get install -y --no-install-recommends \
         gnucash \
         gnucash-common \
         gnucash-docs \
         python3-gnucash \
         libfinance-quote-perl \
         fonts-dejavu \
-        adwaita-icon-theme && \
-    apt-get remove -y software-properties-common && \
-    apt-get autoremove -y && \
-    rm -rf /var/lib/apt/lists/*
+        adwaita-icon-theme
+RUN apt-get remove -y software-properties-common
+RUN apt-get autoremove -y
+RUN rm -rf /var/lib/apt/lists/*
 
 # Copy the start script.
 COPY startapp.sh /startapp.sh
