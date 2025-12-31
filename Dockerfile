@@ -59,6 +59,9 @@ COPY rootfs/ /
 # Set the name of the application.
 RUN set-cont-env APP_NAME "GnuCash"
 
+# Install the application icon.
+RUN install_app_icon.sh "https://upload.wikimedia.org/wikipedia/commons/thumb/1/18/GnuCash_logo.svg/500px-GnuCash_logo.svg.png"
+
 # Define mountable directories.
 VOLUME ["/config"]
 VOLUME ["/data"]
