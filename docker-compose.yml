@@ -1,7 +1,7 @@
 services:
   gnucash:
     build: .
-    image: arturklauser/gnucash:latest
+    image: ${IMAGE:-arturklauser/gnucash:baseimage-gui-ubuntu-24.04-v4-gnucash-5.13}
     container_name: gnucash
     restart: unless-stopped
     ports:
@@ -13,7 +13,7 @@ services:
     environment:
       - TZ=America/Los_Angeles
       # Set user/group ID to match host user if needed (optional)
-      - USER_ID=1000
-      - GROUP_ID=1000
+      - USER_ID=${USER_ID:?unset}
+      - GROUP_ID=${GROUP_ID:?unset}
       # Generate a self-signed certificate if one doesn't exist.
       # To use your own, place them in /config/certs
