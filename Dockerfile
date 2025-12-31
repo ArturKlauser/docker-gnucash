@@ -1,6 +1,6 @@
 # Define build arguments.
 # These args MUST be set on the "docker build" command line.
-# Example: docker build --build-arg BASEIMAGE_VERSION=alpine-3.23-v4 --build-arg GNUCASH_VERSION=5.13 .
+# Example: docker build --build-arg BASEIMAGE_VERSION=ubuntu-24.04-v4 --build-arg GNUCASH_VERSION=5.13 .
 ARG BASEIMAGE_VERSION
 ARG GNUCASH_VERSION
 
@@ -22,17 +22,28 @@ ENV XDG_CACHE_HOME=/config/xdg/cache
 # Install GnuCash.
 # We explicitly install the version matching the argument to ensure consistency.
 # We also install:
-# - gnucash-doc: Documentation.
-# - gnucash-lang: Localization files.
-RUN apk add --no-cache \
-        gnucash=~${GNUCASH_VERSION} \
-        gnucash-doc=~${GNUCASH_VERSION} \
-        gnucash-lang=~${GNUCASH_VERSION} \
-        py3-gnucash \
-        py3-gobject3 \
-        py3-cairo \
-        adwaita-icon-theme \
-        ttf-dejavu
+# - gnucash-common: Common files.
+# - gnucash-docs: Documentation (if available).
+# - libfinance-quote-perl: Finance::Quote support.
+# - python3-gnucash: Python bindings.
+# - fonts-dejavu: Fonts for the GUI.
+# - adwaita-icon-theme: Icon theme.
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        software-properties-common && \
+    add-apt-repository ppa:gnucash/ppa && \
+    apt-get update && \
+    apt-get install -y --no-install-recommends \
+        gnucash=1:${GNUCASH_VERSION}* \
+        gnucash-common=1:${GNUCASH_VERSION}* \
+        gnucash-docs \
+        python3-gnucash \
+        libfinance-quote-perl \
+        fonts-dejavu \
+        adwaita-icon-theme && \
+    apt-get remove -y software-properties-common && \
+    apt-get autoremove -y && \
+    rm -rf /var/lib/apt/lists/*
 
 # Copy the start script.
 COPY startapp.sh /startapp.sh
