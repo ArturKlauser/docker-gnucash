@@ -18,6 +18,9 @@ ENV SECURE_CONNECTION=1
 ENV XDG_CONFIG_HOME=/config/xdg/config
 ENV XDG_DATA_HOME=/config/xdg/data
 ENV XDG_CACHE_HOME=/config/xdg/cache
+ENV LANG=en_US.UTF-8
+ENV LANGUAGE=en_US:en
+ENV LC_ALL=en_US.UTF-8
 
 # Install GnuCash.
 # We explicitly install the version matching the argument to ensure consistency.
@@ -34,12 +37,14 @@ RUN apt-get update && \
     add-apt-repository -y ppa:gnucash/ppa && \
     apt-get update && \
     apt-get install -y --no-install-recommends \
+        locales \
         gnucash=1:${GNUCASH_VERSION}* \
         gnucash-common=1:${GNUCASH_VERSION}* \
         gnucash-docs \
         libfinance-quote-perl \
         fonts-dejavu \
         adwaita-icon-theme && \
+    locale-gen en_US.UTF-8 && \
     apt-get remove -y software-properties-common && \
     apt-get autoremove -y && \
     rm -rf /var/lib/apt/lists/*
