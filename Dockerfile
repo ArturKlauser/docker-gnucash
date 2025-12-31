@@ -1,8 +1,8 @@
 # Define build arguments.
 # These args MUST be set on the "docker build" command line.
 # Example: docker build --build-arg BASEIMAGE_VERSION=ubuntu-24.04-v4 --build-arg GNUCASH_VERSION=5.13 .
-ARG BASEIMAGE_VERSION=ubuntu-24.04-v4
-ARG GNUCASH_VERSION=5.13
+ARG BASEIMAGE_VERSION=undefined
+ARG GNUCASH_VERSION=undefined
 
 # Pull base image.
 FROM jlesage/baseimage-gui:${BASEIMAGE_VERSION}
