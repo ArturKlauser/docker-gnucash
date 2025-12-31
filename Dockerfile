@@ -1,8 +1,8 @@
 # Define build arguments.
 # These args MUST be set on the "docker build" command line.
 # Example: docker build --build-arg BASEIMAGE_VERSION=ubuntu-24.04-v4 --build-arg GNUCASH_VERSION=5.13 .
-ARG BASEIMAGE_VERSION
-ARG GNUCASH_VERSION
+ARG BASEIMAGE_VERSION=ubuntu-24.04-v4
+ARG GNUCASH_VERSION=5.13
 
 # Pull base image.
 FROM jlesage/baseimage-gui:${BASEIMAGE_VERSION}
@@ -30,18 +30,22 @@ ENV XDG_CACHE_HOME=/config/xdg/cache
 # - adwaita-icon-theme: Icon theme.
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-        software-properties-common && \
-    add-apt-repository ppa:gnucash/ppa && \
+        gnupg \
+        ca-certificates \
+        wget && \
+    mkdir -p /etc/apt/keyrings && \
+    wget -qO- https://keyserver.ubuntu.com/pks/lookup?fingerprint=on\&op=get\&search=0x077468D5684973C4BA12B7A7C0DCB0221512D167 | gpg --dearmor -o /etc/apt/keyrings/gnucash.gpg && \
+    echo "deb [signed-by=/etc/apt/keyrings/gnucash.gpg] https://ppa.launchpadcontent.net/gnucash/ppa/ubuntu noble main" > /etc/apt/sources.list.d/gnucash.list && \
     apt-get update && \
     apt-get install -y --no-install-recommends \
         gnucash=1:${GNUCASH_VERSION}* \
         gnucash-common=1:${GNUCASH_VERSION}* \
         gnucash-docs \
-        python3-gnucash \
+        python3-gnucash=1:${GNUCASH_VERSION}* \
         libfinance-quote-perl \
         fonts-dejavu \
         adwaita-icon-theme && \
-    apt-get remove -y software-properties-common && \
+    apt-get remove -y gnupg wget && \
     apt-get autoremove -y && \
     rm -rf /var/lib/apt/lists/*
 
