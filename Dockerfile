@@ -37,14 +37,15 @@ RUN apt-get update && \
     add-apt-repository -y ppa:gnucash/ppa && \
     apt-get update && \
     apt-get install -y --no-install-recommends \
-        locales \
+        locales && \
+    locale-gen en_US.UTF-8 && \
+    apt-get install -y --no-install-recommends \
         gnucash=1:${GNUCASH_VERSION}* \
         gnucash-common=1:${GNUCASH_VERSION}* \
         gnucash-docs \
         libfinance-quote-perl \
         fonts-dejavu \
         adwaita-icon-theme && \
-    locale-gen en_US.UTF-8 && \
     apt-get remove -y software-properties-common && \
     apt-get autoremove -y && \
     rm -rf /var/lib/apt/lists/*
