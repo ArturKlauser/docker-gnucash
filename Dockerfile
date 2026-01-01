@@ -25,7 +25,6 @@ ENV LC_ALL=en_US.UTF-8
 # Install GnuCash.
 # We explicitly install the version matching the argument to ensure consistency.
 # We also install:
-# - gnucash-common: Common files.
 # - gnucash-docs: Documentation (if available).
 # - libfinance-quote-perl: Finance::Quote support.
 # - fonts-dejavu: Fonts for the GUI.
@@ -43,7 +42,6 @@ RUN apt-get update && \
     echo "path-include=/usr/share/doc/gnucash-docs*" > /etc/dpkg/dpkg.cfg.d/z-gnucash-docs && \
     apt-get install -y --no-install-recommends \
         gnucash=1:${GNUCASH_VERSION}* \
-        gnucash-common=1:${GNUCASH_VERSION}* \
         gnucash-docs \
         libfinance-quote-perl \
         fonts-dejavu \
