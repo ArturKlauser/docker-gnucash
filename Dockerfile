@@ -39,6 +39,8 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         locales && \
     locale-gen en_US.UTF-8 && \
+    # Enable installation of GnuCash documentation.
+    echo "path-include=/usr/share/doc/gnucash-docs*" > /etc/dpkg/dpkg.cfg.d/z-gnucash-docs && \
     apt-get install -y --no-install-recommends \
         gnucash=1:${GNUCASH_VERSION}* \
         gnucash-common=1:${GNUCASH_VERSION}* \
