@@ -1,6 +1,6 @@
-# Docker GnuCash
+# GnuCash
 
-This repository contains a Dockerfile to run GnuCash in a container with a web-based GUI, accessible via HTTPS.
+This image runs GnuCash with a web-based GUI, accessible via HTTPS.
 
 ## Usage
 
