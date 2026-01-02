@@ -29,6 +29,10 @@ ENV LC_ALL=en_US.UTF-8
 # - libfinance-quote-perl: Finance::Quote support.
 # - fonts-dejavu: Fonts for the GUI.
 # - adwaita-icon-theme: Icon theme.
+# - yelp: Gnome help page browser.
+#         Note that it doesn't register itself properly, so we provide a
+#         defaults config file separately in rootfs/etc/xdg/mimeapps.list
+#         that makes sure GnuCash can start it for displaying its help pages.
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
@@ -39,10 +43,15 @@ RUN apt-get update && \
         locales && \
     locale-gen en_US.UTF-8 && \
     # Enable installation of GnuCash documentation.
-    echo "path-include=/usr/share/doc/gnucash-docs*" > /etc/dpkg/dpkg.cfg.d/z-gnucash-docs && \
+    #   - This isn't necessary if we use Yelp, since it depends on the .xml help
+    #     files that are installed elsewhere (at /usr/share/help/*/gnucash*). The
+    #     files here are .html and .pdf files that are necessary for other help
+    #     viewers, e.g., for a web browser.
+    # echo "path-include=/usr/share/doc/gnucash-docs*" > /etc/dpkg/dpkg.cfg.d/z-gnucash-docs && \
     apt-get install -y --no-install-recommends \
         gnucash=1:${GNUCASH_VERSION}* \
         gnucash-docs \
+        yelp \
         libfinance-quote-perl \
         fonts-dejavu \
         adwaita-icon-theme && \
