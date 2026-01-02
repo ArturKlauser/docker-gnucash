@@ -1,2 +1,2 @@
 #!/bin/sh
-exec /usr/bin/gnucash
+exec /usr/bin/gnucash --nofile
