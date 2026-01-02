@@ -56,3 +56,12 @@ jobs:
           build-args: |
             BASEIMAGE_VERSION=${{ env.BASEIMAGE_VERSION }}
             GNUCASH_VERSION=${{ env.GNUCASH_VERSION }}
+
+      - name: Update Docker Hub description
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        uses: peter-evans/dockerhub-description@v4
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          repository: ${{ secrets.DOCKERHUB_USERNAME }}/gnucash
+          readme-filepath: DOCKERHUB.md
