@@ -1,6 +1,7 @@
 #!/usr/bin/env bats
 
-load helpers
+load 'setup'
+load 'teardown'
 
 @test "application is running" {
     # Start the container.
