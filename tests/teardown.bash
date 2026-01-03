@@ -2,6 +2,9 @@
 
 # This function is executed when the test fails.
 teardown() {
+    # Display all running processes.
+    docker exec "${CONTAINER_NAME}" ps -ef
+
     # Display log of the container.
     echo "Dumping log of container ${CONTAINER_NAME}..."
     docker logs "${CONTAINER_NAME}"
