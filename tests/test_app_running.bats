@@ -4,7 +4,6 @@ load 'setup_common'
 load 'teardown_common'
 
 setup() {
-    # Start the container.
     start_container
 }
 

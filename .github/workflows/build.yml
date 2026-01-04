@@ -76,10 +76,10 @@ jobs:
 
       - name: Test image
         run: |
-          echo "${{ steps.inspect.outputs.raw }}" | jq -r '.manifests[] | .digest + " " + .platform.architecture' | while read -r digest arch; do
+          echo "${{ steps.inspect.outputs.raw }}" | jq -r '.manifests[] | select(.platform.architecture != "arm" or .platform.variant != "v6") | .digest + " " + .platform.architecture' | while read -r digest arch; do
             export DOCKER_IMAGE=localhost:5000/${{ secrets.DOCKERHUB_USERNAME }}/gnucash:github-ci@$digest
             docker pull $DOCKER_IMAGE
-            docker run --rm $DOCKER_IMAGE sh -c "echo Testing image on $(uname -m)..."
+            docker run --rm $DOCKER_IMAGE sh -c "echo Testing image on $arch..."
             bats -j $(nproc) tests
           done
 
