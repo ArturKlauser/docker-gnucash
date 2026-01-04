@@ -76,11 +76,10 @@ jobs:
 
       - name: Test image
         run: |
-          for SHA in ${{ join(fromJSON(steps.inspect.outputs.raw).manifests.*.digest, ' ') }}
-          do
-            export DOCKER_IMAGE=localhost:5000/${{ secrets.DOCKERHUB_USERNAME }}/gnucash:github-ci@$SHA
+          echo "${{ steps.inspect.outputs.raw }}" | jq -r '.manifests[] | .digest + " " + .platform.architecture' | while read -r digest arch; do
+            export DOCKER_IMAGE=localhost:5000/${{ secrets.DOCKERHUB_USERNAME }}/gnucash:github-ci@$digest
             docker pull $DOCKER_IMAGE
-            docker run --rm $DOCKER_IMAGE sh -c 'echo Testing image on $(uname -m)...'
+            docker run --rm $DOCKER_IMAGE sh -c "echo Testing image on $(uname -m)..."
             bats -j $(nproc) tests
           done
 

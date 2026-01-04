@@ -1,16 +1,11 @@
 #!/usr/bin/env bats
 
-load 'setup'
+load 'setup_common'
+load 'teardown_common'
 
 setup() {
     # Start the container.
     start_container
-    sleep 30
-}
-
-teardown() {
-    # Remove the container.
-    docker rm -f "${CONTAINER_NAME}" >/dev/null
 }
 
 @test "application is running" {

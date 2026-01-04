@@ -50,6 +50,9 @@ RUN apt-get update && \
     # echo "path-include=/usr/share/doc/gnucash-docs*" > /etc/dpkg/dpkg.cfg.d/z-gnucash-docs && \
     apt-get install -y --no-install-recommends \
         gnucash=1:${GNUCASH_VERSION}* \
+        python3-gnucash \
+        python3-gi \
+        gir1.2-gtk-3.0 \
         gnucash-docs \
         yelp \
         libfinance-quote-perl \

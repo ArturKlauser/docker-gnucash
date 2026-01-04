@@ -8,7 +8,6 @@ CONTAINER_NAME="gnucash-test-container"
 #
 start_container() {
     local DOCKER_ARGS="$1"
-    local IP
 
     # Make sure the container is not already running.
     if [[ "$(docker ps -a -q -f name=${CONTAINER_NAME})" ]]; then
@@ -21,5 +20,16 @@ start_container() {
 
     # Wait until the container is ready.
     echo "Waiting for container to be ready..."
-    sleep 30
+    local i
+    for i in $(seq 1 60); do
+        if docker exec "${CONTAINER_NAME}" sv status app | grep -q "run: app"; then
+            break
+        fi
+        sleep 1
+    done
+
+    if [[ $i -eq 60 ]]; then
+        echo "Container failed to start."
+        return 1
+    fi
 }
