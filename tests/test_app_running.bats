@@ -1,14 +1,16 @@
-#!/usr/bin/env bats
-
-load 'setup_common'
-load 'teardown_common'
+#!/bin/env bats
 
 setup() {
-    start_container
+    load setup_common
+    load setup_container_daemon
 }
 
-@test "application is running" {
-    # Make sure the application is running.
-    run docker exec "${CONTAINER_NAME}" pgrep gnucash
+teardown() {
+    load teardown_container_daemon
+    load teardown_common
+}
+
+@test "Checking that the gnucash application is running..." {
+    run docker exec "${CONTAINER_DAEMON_NAME}" pgrep gnucash
     [ "$status" -eq 0 ]
 }

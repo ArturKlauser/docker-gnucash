@@ -1,15 +1,2 @@
-#!/bin/bash
-
-# This function is executed when the test fails.
-teardown() {
-    # Display all running processes.
-    docker exec "${CONTAINER_NAME}" ps -ef
-
-    # Display log of the container.
-    echo "Dumping log of container ${CONTAINER_NAME}..."
-    docker logs "${CONTAINER_NAME}"
-
-    # Remove the container.
-    echo "Removing container ${CONTAINER_NAME}..."
-    docker rm -f "${CONTAINER_NAME}" >/dev/null
-}
+# Remove temporary work directory.
+rm -r "$TESTS_WORKDIR"

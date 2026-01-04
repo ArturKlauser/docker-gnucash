@@ -28,15 +28,43 @@ jobs:
       - name: Setup BATS
         uses: mig4/setup-bats@v1
         with:
-          bats-version: 1.11.1
+          bats-version: 1.13.0
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
+        with:
+          platforms: linux/amd64,linux/arm64
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
         with:
           driver-opts: network=host
+
+      - name: Build and push to local registry
+        uses: docker/build-push-action@v5
+        with:
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: localhost:5000/${{ secrets.DOCKERHUB_USERNAME }}/gnucash:github-ci
+          build-args: |
+            BASEIMAGE_VERSION=${{ env.BASEIMAGE_VERSION }}
+            GNUCASH_VERSION=${{ env.GNUCASH_VERSION }}
+
+      - name: Inspect
+        id: inspect
+        run: |
+          docker buildx imagetools inspect localhost:5000/${{ secrets.DOCKERHUB_USERNAME }}/gnucash:github-ci
+          echo "raw=$(docker buildx imagetools inspect --raw localhost:5000/${{ secrets.DOCKERHUB_USERNAME }}/gnucash:github-ci | tr -d '\n')" >> $GITHUB_OUTPUT
+
+      - name: Test image
+        run: |
+          for SHA in ${{ join(fromJSON(steps.inspect.outputs.raw).manifests.*.digest, ' ') }}
+          do
+            export DOCKER_IMAGE=localhost:5000/${{ env.DOCKER_IMAGE_NAME }}:github-ci@$SHA
+            docker pull $DOCKER_IMAGE
+            docker run --rm $DOCKER_IMAGE sh -c 'echo Testing image on $(uname -m)...'
+            bats -j $(nproc) tests
+          done
 
       - name: Login to Docker Hub
         if: github.event_name != 'pull_request'
@@ -57,41 +85,13 @@ jobs:
             type=ref,event=tag
             type=ref,event=pr
 
-      - name: Build and push to local registry
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          platforms: linux/amd64,linux/arm64
-          push: true
-          tags: localhost:5000/${{ secrets.DOCKERHUB_USERNAME }}/gnucash:github-ci
-          build-args: |
-            BASEIMAGE_VERSION=${{ env.BASEIMAGE_VERSION }}
-            GNUCASH_VERSION=${{ env.GNUCASH_VERSION }}
-
-      - name: Inspect
-        id: inspect
-        run: |
-          docker buildx imagetools inspect localhost:5000/${{ secrets.DOCKERHUB_USERNAME }}/gnucash:github-ci
-          echo "raw=$(docker buildx imagetools inspect --raw localhost:5000/${{ secrets.DOCKERHUB_USERNAME }}/gnucash:github-ci | tr -d '\n')" >> $GITHUB_OUTPUT
-
-      - name: Test image
-        run: |
-          echo "${{ steps.inspect.outputs.raw }}" | jq -r '.manifests[] | select(.platform.architecture != "arm" or .platform.variant != "v6") | .digest + " " + .platform.architecture' | while read -r digest arch; do
-            export DOCKER_IMAGE=localhost:5000/${{ secrets.DOCKERHUB_USERNAME }}/gnucash:github-ci@$digest
-            docker pull $DOCKER_IMAGE
-            docker run --rm $DOCKER_IMAGE sh -c "echo Testing image on $arch..."
-            bats -j $(nproc) tests
-          done
-
-      - name: Build and push
+      - name: Build and push to Dockerhub
         if: github.event_name != 'pull_request'
         uses: docker/build-push-action@v5
         with:
-          context: .
           platforms: linux/amd64,linux/arm64
           push: true
           tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
           build-args: |
             BASEIMAGE_VERSION=${{ env.BASEIMAGE_VERSION }}
             GNUCASH_VERSION=${{ env.GNUCASH_VERSION }}
