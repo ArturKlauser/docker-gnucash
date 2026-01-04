@@ -76,10 +76,11 @@ jobs:
 
       - name: Test image
         run: |
-          echo "${{ steps.inspect.outputs.raw }}" | jq -r '.manifests[] | select(.platform.architecture != "arm" or .platform.variant != "v6") | .digest + " " + .platform.architecture' | while read -r digest arch; do
+          RUNNER_ARCH=$(echo "${{ runner.arch }}" | tr '[:upper:]' '[:lower:]')
+          echo "${{ steps.inspect.outputs.raw }}" | jq -r ".manifests[] | select(.platform.architecture == \"$RUNNER_ARCH\") | .digest" | while read -r digest; do
             export DOCKER_IMAGE=localhost:5000/${{ secrets.DOCKERHUB_USERNAME }}/gnucash:github-ci@$digest
             docker pull $DOCKER_IMAGE
-            docker run --rm $DOCKER_IMAGE sh -c "echo Testing image on $arch..."
+            docker run --rm $DOCKER_IMAGE sh -c "echo Testing image on $RUNNER_ARCH..."
             bats -j $(nproc) tests
           done
 
