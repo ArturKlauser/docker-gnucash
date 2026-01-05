@@ -21,3 +21,21 @@ teardown() {
     [ "$status" -eq 0 ]
     [ "${lines[0]}" = "1" ]
 }
+
+@test "Checking XDG_CONFIG_HOME environment variable..." {
+    run docker exec "${CONTAINER_DAEMON_NAME}" printenv XDG_CONFIG_HOME
+    [ "$status" -eq 0 ]
+    [[ "${lines[0]}" == "/config/"* ]]
+}
+
+@test "Checking XDG_DATA_HOME environment variable..." {
+    run docker exec "${CONTAINER_DAEMON_NAME}" printenv XDG_DATA_HOME
+    [ "$status" -eq 0 ]
+    [[ "${lines[0]}" == "/config/"* ]]
+}
+
+@test "Checking XDG_CACHE_HOME environment variable..." {
+    run docker exec "${CONTAINER_DAEMON_NAME}" printenv XDG_CACHE_HOME
+    [ "$status" -eq 0 ]
+    [[ "${lines[0]}" == "/config/"* ]]
+}
