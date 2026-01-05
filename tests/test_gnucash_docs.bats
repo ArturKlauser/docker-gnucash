@@ -26,6 +26,6 @@ teardown() {
 }
 
 @test "Checking that GnuCash guide contains XML files..." {
-    run docker exec "${CONTAINER_DAEMON_NAME}" ls /usr/share/help/C/gnucash-guide/*.xml
+    run docker exec "${CONTAINER_DAEMON_NAME}" sh -c 'test -n "$(find /usr/share/help/C/gnucash-guide/ -maxdepth 1 -name "*.xml" -print -quit)"'
     [ "$status" -eq 0 ]
 }
