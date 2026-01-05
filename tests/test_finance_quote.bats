@@ -1,22 +1,26 @@
 #!/bin/env bats
 
-setup() {
-    load setup_common
-    load setup_container_daemon
+load utils
+
+setup_file() {
+  setup_all
 }
 
-teardown() {
-    load teardown_container_daemon
-    load teardown_common
+teardown_file() {
+  teardown_all
 }
 
-@test "Checking that Finance::Quote is installed..." {
-    run docker exec "${CONTAINER_DAEMON_NAME}" perl -mFinance::Quote -e 1
-    [ "$status" -eq 0 ]
+@test "Checking that Finance::Quote Perl module is installed..." {
+  run docker exec "${CONTAINER_DAEMON_NAME}" perl -mFinance::Quote -e 1
+  [ "$status" -eq 0 ]
 }
 
-@test "Checking that gnucash-cli --quotes info works..." {
-    run docker exec "${CONTAINER_DAEMON_NAME}" gnucash-cli --quotes info
-    [ "$status" -eq 0 ]
-    [[ "${output}" =~ "Finance::Quote version "[0-9]+\.[0-9]+ ]]
+@test "Checking that Gnucash integration with Finance::Quote works..." {
+  run docker exec "${CONTAINER_DAEMON_NAME}" gnucash-cli --quotes info
+  [ "$status" -eq 0 ]
+  [[ "${output}" =~ "Finance::Quote version "[0-9]+\.[0-9]+ ]]
 }
+
+# We intentionally don't test the actual quote retrieval. During time of test we
+# don't want to depend on remote servers which over the past have shown various
+# degrees of instability, authorization, and quota issue.
