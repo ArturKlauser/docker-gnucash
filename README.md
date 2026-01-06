@@ -1,4 +1,4 @@
-# ![GnuCash Logo](https://images.weserv.nl/?url=upload.wikimedia.org/wikipedia/commons/thumb/1/18/GnuCash_logo.svg/500px-GnuCash_logo.svg.png&w=64) GnuCash
+# <a href="https://www.gnucash.org/"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/18/GnuCash_logo.svg/500px-GnuCash_logo.svg.png" width="64" alt="GnuCash Logo"> GnuCash</a>
 
 This repository contains a Dockerfile to run GnuCash in a container with a web-based GUI, accessible via HTTPS.
 
