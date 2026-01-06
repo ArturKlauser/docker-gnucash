@@ -56,11 +56,13 @@ jobs:
       - name: Inspect
         id: inspect
         run: |
+          # Get the metadata of all platform images from the multi-platform manifest of the above build.
           docker buildx imagetools inspect localhost:5000/${{ env.DOCKER_IMAGE_NAME }}:github-ci
           echo "raw=$(docker buildx imagetools inspect --raw localhost:5000/${{ env.DOCKER_IMAGE_NAME }}:github-ci | tr -d '\n')" >> $GITHUB_OUTPUT
 
       - name: Test image
         run: |
+          # Run the test suite on all architectures.
           # Get digest and architecture of each manifest in multi-platform image.
           digests=(${{ join(fromJSON(steps.inspect.outputs.raw).manifests.*.digest, ' ') }})
           architectures=(${{ join(fromJSON(steps.inspect.outputs.raw).manifests.*.platform.architecture, ' ') }})
@@ -95,17 +97,46 @@ jobs:
           username: ${{ vars.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Docker meta
+      - name: Prepare Github Metadata
         id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ env.DOCKER_IMAGE_NAME }}
-          tags: |
-            type=raw,value=baseimage-gui-${{ env.BASEIMAGE_VERSION }}-gnucash-${{ env.GNUCASH_VERSION }},enable=${{ github.ref == 'refs/heads/main' }}
-            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
-            type=ref,event=branch,enable=${{ github.ref != 'refs/heads/main' }}
-            type=ref,event=tag
-            type=ref,event=pr
+        if: github.event_name != 'pull_request'
+        run: |
+          # Determine the Docker container tags.
+          TAGS=""
+
+          if [[ $GITHUB_REF == refs/tags/* ]]; then
+            # Git tags are used 'as is' as docker image tags.
+            VERSION=${GITHUB_REF#refs/tags/}
+            TAGS="${{ env.DOCKER_IMAGE_NAME }}:${VERSION}"
+
+            if [[ $VERSION =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+               # Apply semantic version (semver) expansion, i.e., latest X.Y.Z also becomes X.Y and X
+               V=${VERSION:1}
+               MAJOR_MINOR=${V%.*}
+               MAJOR=${MAJOR_MINOR%.*}
+               TAGS="$TAGS,${{ env.DOCKER_IMAGE_NAME }}:v${MAJOR_MINOR}"
+               TAGS="$TAGS,${{ env.DOCKER_IMAGE_NAME }}:v${MAJOR}"
+            fi
+
+          elif [[ $GITHUB_REF == 'refs/heads/main' ]]; then
+            # Git main branch commits are tagged with docker's default 'latest' tag.
+            TAGS="${{ env.DOCKER_IMAGE_NAME }}:latest"
+            TAGS="$TAGS,${{ env.DOCKER_IMAGE_NAME }}:baseimage-gui-${{ env.BASEIMAGE_VERSION }}-gnucash-${{ env.GNUCASH_VERSION }}"
+
+          elif [[ $GITHUB_REF == refs/heads/* ]]; then
+            # Other git branches are tagged with the branch name.
+            VERSION=${GITHUB_REF#refs/heads/}
+            # Basic sanitization (replace / with -)
+            VERSION=${VERSION//\//-}
+            TAGS="${{ env.DOCKER_IMAGE_NAME }}:${VERSION}"
+
+          elif [[ $GITHUB_REF == refs/pull/* ]]; then
+            # Pull requests are tagged with pr-<PR#>.
+            VERSION=pr-${{ github.event.number }}
+            TAGS="${{ env.DOCKER_IMAGE_NAME }}:${VERSION}"
+          fi
+
+          echo "tags=${TAGS}" >> $GITHUB_OUTPUT
 
       - name: Build and push to Dockerhub
         if: github.event_name != 'pull_request'
