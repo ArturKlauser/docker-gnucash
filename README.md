@@ -1,8 +1,11 @@
-# Docker GnuCash
+# ![GnuCash Logo](https://images.weserv.nl/?url=upload.wikimedia.org/wikipedia/commons/thumb/1/18/GnuCash_logo.svg/500px-GnuCash_logo.svg.png&w=64) GnuCash
 
 This repository contains a Dockerfile to run GnuCash in a container with a web-based GUI, accessible via HTTPS.
 
 Based on [jlesage/docker-baseimage-gui](https://github.com/jlesage/docker-baseimage-gui).
+
+> [!NOTE]
+> This Docker container is entirely unofficial and not made by the creators of GnuCash.
 
 ## Features
 
