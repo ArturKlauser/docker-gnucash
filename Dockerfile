@@ -15,6 +15,7 @@ ARG GNUCASH_VERSION
 # Set the name of the application.
 ENV APP_NAME="GnuCash"
 ENV SECURE_CONNECTION=1
+#ENV CONTAINER_DEBUG=1
 ENV XDG_CONFIG_HOME=/config/xdg/config
 ENV XDG_DATA_HOME=/config/xdg/data
 ENV XDG_CACHE_HOME=/config/xdg/cache
