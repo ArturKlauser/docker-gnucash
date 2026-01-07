@@ -39,3 +39,9 @@ teardown_file() {
   [ "$status" -eq 0 ]
   [[ "${lines[0]}" == "/config/"* ]]
 }
+
+@test "Checking HOME environment variable points to /data..." {
+  run docker exec "${CONTAINER_DAEMON_NAME}" printenv HOME
+  [ "$status" -eq 0 ]
+  [ "${lines[0]}" = "/data" ]
+}
