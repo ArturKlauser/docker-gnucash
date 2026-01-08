@@ -12,10 +12,12 @@ teardown_file() {
 
 @test "Checking that /startapp.sh exists..." {
   run docker exec "${CONTAINER_DAEMON_NAME}" test -f /startapp.sh
+  echo "exit status: $status"
   [ "$status" -eq 0 ]
 }
 
 @test "Checking that /startapp.sh has execute permissions..." {
   run docker exec "${CONTAINER_DAEMON_NAME}" test -x /startapp.sh
+  echo "exit status: $status"
   [ "$status" -eq 0 ]
 }
