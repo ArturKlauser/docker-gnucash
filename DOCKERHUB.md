@@ -50,8 +50,8 @@ This image runs GnuCash with a web-based GUI, accessible via HTTPS.
 docker run -d \
     --name=gnucash \
     -p 5800:5800 \
-    -v $(pwd)/config:/config:rw \
-    -v $(pwd)/data:/data:rw \
+    -v ${CONFIG_DIR:-$(pwd)/config}:/config:rw \
+    -v ${DATA_DIR:-$(pwd)/data}:/data:rw \
     -e USER_ID=$(id -u) \
     -e GROUP_ID=$(id -g) \
     arturklauser/gnucash:latest
