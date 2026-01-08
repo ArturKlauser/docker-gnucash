@@ -8,8 +8,8 @@ services:
       - "5800:5800"
       # Port 5900 is NOT exposed to ensure access is only via the secure web interface.
     volumes:
-      - "./config:/config:rw"
-      - "./data:/data:rw"
+      - "${CONFIG_DIR:-./config}:/config:rw"
+      - "${DATA_DIR:-./data}:/data:rw"
     environment:
       - TZ=America/Los_Angeles
       # Set user/group ID to match host user if needed (optional)
