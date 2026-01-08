@@ -83,15 +83,15 @@ docker run -d \
 
 ## Configuration
 
-### Environment Variables
+### Environment Variables used by Docker Compose
 
 | Variable | Description | Default |
 | :--- | :--- | :--- |
 | `USER_ID` | User ID of the user running the application. | unset - must be set on command line|
 | `GROUP_ID` | Group ID of the user running the application. | unset - must be set on command line|
 | `TZ` | Timezone (e.g., `America/New_York`). | `America/Los_Angeles` |
-| `CONFIG_DIR` | Host path for the application configuration directory. Used by Docker Compose. | `./config` |
-| `DATA_DIR` | Host path for the GnuCash data files directory. Used by Docker Compose. | `./data` |
+| `CONFIG_DIR` | Host path for the application configuration directory. | `./config` |
+| `DATA_DIR` | Host path for the GnuCash data files directory. | `./data` |
 
 ### Volumes
 
