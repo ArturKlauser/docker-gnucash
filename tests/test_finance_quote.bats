@@ -12,13 +12,13 @@ teardown_file() {
 
 @test "Checking that Finance::Quote Perl module is installed..." {
   run docker exec "${CONTAINER_DAEMON_NAME}" perl -mFinance::Quote -e 1
-  echo "exit status: $status"
+  echo "exit status: $status (perl -mFinance::Quote -e 1)"
   [ "$status" -eq 0 ]
 }
 
 @test "Checking that Gnucash integration with Finance::Quote works..." {
   run docker exec "${CONTAINER_DAEMON_NAME}" gnucash-cli --quotes info
-  echo "exit status: $status"
+  echo "exit status: $status (gnucash-cli --quotes info)"
   [ "$status" -eq 0 ]
   echo "output: ${output}"
   [[ "${output}" =~ "Finance::Quote version "[0-9]+\.[0-9]+ ]]
