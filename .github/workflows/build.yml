@@ -15,6 +15,7 @@ env:
   GNUCASH_VERSION: 5.13
   PLATFORMS: linux/amd64,linux/arm64
   DOCKER_IMAGE_NAME: ${{ vars.DOCKERHUB_USERNAME }}/gnucash
+  CACHE_IMAGE_NAME: ghcr.io/${{ github.repository }}
 
 jobs:
   build:
@@ -43,6 +44,13 @@ jobs:
         with:
           driver-opts: network=host
 
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Build and push to local registry
         uses: docker/build-push-action@v5
         with:
@@ -52,6 +60,8 @@ jobs:
           build-args: |
             BASEIMAGE_VERSION=${{ env.BASEIMAGE_VERSION }}
             GNUCASH_VERSION=${{ env.GNUCASH_VERSION }}
+          cache-from: type=registry,ref=${{ env.CACHE_IMAGE_NAME }}:cache-${{ startsWith(github.ref, 'refs/tags/') && 'main' || (github.head_ref || github.ref_name) }}
+          cache-to: type=registry,ref=${{ env.CACHE_IMAGE_NAME }}:cache-${{ github.head_ref || github.ref_name }},mode=max
 
       - name: Inspect
         id: inspect
@@ -148,6 +158,8 @@ jobs:
           build-args: |
             BASEIMAGE_VERSION=${{ env.BASEIMAGE_VERSION }}
             GNUCASH_VERSION=${{ env.GNUCASH_VERSION }}
+          cache-from: type=registry,ref=${{ env.CACHE_IMAGE_NAME }}:cache-${{ startsWith(github.ref, 'refs/tags/') && 'main' || (github.head_ref || github.ref_name) }}
+          cache-to: type=registry,ref=${{ env.CACHE_IMAGE_NAME }}:cache-${{ startsWith(github.ref, 'refs/tags/') && 'main' || (github.head_ref || github.ref_name) }},mode=max
 
       - name: Update Docker Hub description
         if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
