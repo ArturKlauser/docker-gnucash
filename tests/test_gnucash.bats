@@ -10,11 +10,23 @@ teardown_file() {
   teardown_all
 }
 
-@test "Checking that Gnucash is installed properly..." {
-  run docker exec "${CONTAINER_DAEMON_NAME}" which gnucash
+@test "Checking that /startapp.sh exists..." {
+  run exec_in_container test -f /startapp.sh
+  echo "exit status: $status (test -f /startapp.sh)"
+  [ "$status" -eq 0 ]
+}
+
+@test "Checking that /startapp.sh has execute permissions..." {
+  run exec_in_container test -x /startapp.sh
+  echo "exit status: $status (test -x /startapp.sh)"
+  [ "$status" -eq 0 ]
+}
+
+@test "Checking that Gnucash is installed..." {
+  run exec_in_container which gnucash
   echo "exit status: $status (which gnucash)"
   [ "$status" -eq 0 ]
-  run docker exec "${CONTAINER_DAEMON_NAME}" test -x "${lines[0]}"
+  run exec_in_container test -x "${lines[0]}"
   echo "exit status: $status (test -x \"${lines[0]}\")"
   [ "$status" -eq 0 ]
 }
@@ -26,18 +38,19 @@ teardown_file() {
   # container to start up before we can test even the most basic gnucash
   # invocation.
   wait_for_container_daemon
-  run docker exec "${CONTAINER_DAEMON_NAME}" \
-    sh -c 'gnucash --display=:0 --version'
+  run exec_in_container sh -c 'gnucash --display=:0 --version'
   echo "exit status: $status (gnucash --display=:0 --version)"
   [ "$status" -eq 0 ]
   echo "output: ${output}"
   [[ "${output}" =~ "GnuCash "[0-9]+\.[0-9]+ ]]
 }
 
+# To get the GNC_* variables that the installed gnucash app is using, we need
+# to run 'gnucach --paths' in the environment context that the already started
+# gnucash process is operating in.
+
 @test "Checking Gnucash GNC_USERDATA_DIR points to /config..." {
-  wait_for_container_daemon
-  run docker exec "${CONTAINER_DAEMON_NAME}" \
-    sh -c 'runuser -u app -- gnucash --display=:0 --paths'
+  run exec_in_container_app_env gnucash --display=:0 --paths
   echo "exit status: $status (gnucash --display=:0 --paths)"
   [ "$status" -eq 0 ]
   echo "output: ${output}"
@@ -45,9 +58,7 @@ teardown_file() {
 }
 
 @test "Checking Gnucash GNC_USERCONFIG_DIR points to /config..." {
-  wait_for_container_daemon
-  run docker exec "${CONTAINER_DAEMON_NAME}" \
-    sh -c 'runuser -u app -- gnucash --display=:0 --paths'
+  run exec_in_container_app_env gnucash --display=:0 --paths
   echo "exit status: $status (gnucash --display=:0 --paths)"
   [ "$status" -eq 0 ]
   echo "output: ${output}"
@@ -56,7 +67,7 @@ teardown_file() {
 
 @test "Checking that Gnucash runs automatically after container start..." {
   wait_for_container_daemon
-  run docker exec "${CONTAINER_DAEMON_NAME}" pgrep gnucash
-  echo "exit status: $status (pgrep gnucash)"
+  run exec_in_container pgrep -P 1 gnucash
+  echo "exit status: $status (pgrep -P 1 gnucash)"
   [ "$status" -eq 0 ]
 }

@@ -3,10 +3,6 @@ force_error() {
   exit 1
 }
 
-docker_run() {
-  run docker run "$@"
-}
-
 setup_common() {
   [ -n "$DOCKER_IMAGE" ] \
     || force_error 'DOCKER_IMAGE environment variable not defined'
@@ -17,4 +13,9 @@ setup_common() {
 
   # Create workdir to store temporary stuff.
   export TESTS_WORKDIR="$(mktemp -d)"
+}
+
+teardown_common() {
+  # Remove temporary work directory.
+  rm -r "$TESTS_WORKDIR"
 }
