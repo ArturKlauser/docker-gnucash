@@ -37,7 +37,7 @@ teardown_file() {
 @test "Checking Gnucash GNC_USERDATA_DIR points to /config..." {
   wait_for_container_daemon
   run docker exec "${CONTAINER_DAEMON_NAME}" \
-    sh -c 'gnucash --display=:0 --paths'
+    sh -c 'runuser -u app -- gnucash --display=:0 --paths'
   echo "exit status: $status (gnucash --display=:0 --paths)"
   [ "$status" -eq 0 ]
   echo "output: ${output}"
@@ -47,7 +47,7 @@ teardown_file() {
 @test "Checking Gnucash GNC_USERCONFIG_DIR points to /config..." {
   wait_for_container_daemon
   run docker exec "${CONTAINER_DAEMON_NAME}" \
-    sh -c 'gnucash --display=:0 --paths'
+    sh -c 'runuser -u app -- gnucash --display=:0 --paths'
   echo "exit status: $status (gnucash --display=:0 --paths)"
   [ "$status" -eq 0 ]
   echo "output: ${output}"
