@@ -107,6 +107,12 @@ To build the image locally:
 docker build --build-arg BASEIMAGE_VERSION=ubuntu-24.04-v4 --build-arg GNUCASH_VERSION=5.13 -t gnucash .
 ```
 
+### Build Arguments
+
+| Argument | Description | Default |
+| :--- | :--- | :--- |
+| `WITH_DOCS` | Set to `false` to build the image without GnuCash documentation. | `true` |
+
 To run the locally built image:
 ```bash
 USER_ID=$(id -u) GROUP_ID=$(id -g) IMAGE=gnucash docker compose up -d

@@ -3,6 +3,7 @@
 # Example: docker build --build-arg BASEIMAGE_VERSION=ubuntu-24.04-v4 --build-arg GNUCASH_VERSION=5.13 .
 ARG BASEIMAGE_VERSION=undefined
 ARG GNUCASH_VERSION=undefined
+ARG WITH_DOCS=true
 
 # Pull base image.
 FROM jlesage/baseimage-gui:${BASEIMAGE_VERSION}
@@ -11,6 +12,7 @@ FROM jlesage/baseimage-gui:${BASEIMAGE_VERSION}
 # ARGs declared before FROM must be re-declared after FROM to be available in the build stage.
 ARG BASEIMAGE_VERSION
 ARG GNUCASH_VERSION
+ARG WITH_DOCS
 
 # Set the name of the application.
 ENV APP_NAME="GnuCash"
@@ -48,11 +50,14 @@ RUN apt-get update && \
     # echo "path-include=/usr/share/doc/gnucash-docs*" > /etc/dpkg/dpkg.cfg.d/z-gnucash-docs && \
     apt-get install -y --no-install-recommends \
         gnucash=1:${GNUCASH_VERSION}* \
-        gnucash-docs \
-        yelp \
         libfinance-quote-perl \
         fonts-dejavu \
         adwaita-icon-theme && \
+    if [ "${WITH_DOCS}" = "true" ]; then \
+        apt-get install -y --no-install-recommends \
+            gnucash-docs \
+            yelp; \
+    fi && \
     apt-get remove -y software-properties-common && \
     apt-get autoremove -y && \
     rm -rf /var/lib/apt/lists/*
@@ -62,6 +67,13 @@ COPY startapp.sh /startapp.sh
 
 # Copy the rootfs directory.
 COPY rootfs/ /
+
+# Conditionally install the Yelp configuration.
+RUN if [ "${WITH_DOCS}" = "true" ]; then \
+        mkdir -p /etc/xdg && \
+        cp /opt/install/mimeapps.list /etc/xdg/mimeapps.list; \
+    fi && \
+    rm -rf /opt/install
 
 # Set the name of the application.
 RUN set-cont-env APP_NAME "GnuCash"
