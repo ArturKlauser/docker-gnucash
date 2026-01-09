@@ -51,6 +51,35 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Prepare cache tags
+        id: cache
+        run: |
+          # The cache image name must be lowercase.
+          CACHE_IMAGE_NAME="${{ env.CACHE_IMAGE_NAME }}"
+          CACHE_IMAGE_NAME="${CACHE_IMAGE_NAME,,}"
+          echo "cache-image-name=${CACHE_IMAGE_NAME}" >> $GITHUB_OUTPUT
+
+          # For PRs, we want to read from the main branch cache and the PR's own cache,
+          # but only write to the PR's cache.
+          if [[ $GITHUB_REF == refs/pull/* ]]; then
+            CACHE_FROM="type=registry,ref=${CACHE_IMAGE_NAME}:cache-main,ref=${CACHE_IMAGE_NAME}:cache-${{ github.head_ref }}"
+            CACHE_TO="type=registry,ref=${CACHE_IMAGE_NAME}:cache-${{ github.head_ref }},mode=max"
+          # For pushes to the main branch that are the result of a PR merge, we
+          # want to read from the main branch cache and the PR's cache, but
+          # only write to the main branch cache.
+          elif [[ $GITHUB_REF == 'refs/heads/main' && github.event.pull_request.merged == 'true' ]]; then
+            CACHE_FROM="type=registry,ref=${CACHE_IMAGE_NAME}:cache-main,ref=${CACHE_IMAGE_NAME}:cache-${{ github.event.pull_request.head.ref }}"
+            CACHE_TO="type=registry,ref=${CACHE_IMAGE_NAME}:cache-main,mode=max"
+          # For all other cases (e.g., direct pushes to main, tag builds), we
+          # read from and write to the main branch cache.
+          else
+            CACHE_FROM="type=registry,ref=${CACHE_IMAGE_NAME}:cache-main"
+            CACHE_TO="type=registry,ref=${CACHE_IMAGE_NAME}:cache-main,mode=max"
+          fi
+
+          echo "cache-from=${CACHE_FROM}" >> $GITHUB_OUTPUT
+          echo "cache-to=${CACHE_TO}" >> $GITHUB_OUTPUT
+
       - name: Build and push to local registry
         uses: docker/build-push-action@v5
         with:
@@ -60,8 +89,8 @@ jobs:
           build-args: |
             BASEIMAGE_VERSION=${{ env.BASEIMAGE_VERSION }}
             GNUCASH_VERSION=${{ env.GNUCASH_VERSION }}
-          cache-from: type=registry,ref=${{ env.CACHE_IMAGE_NAME }}:cache-${{ startsWith(github.ref, 'refs/tags/') && 'main' || (github.head_ref || github.ref_name) }}
-          cache-to: type=registry,ref=${{ env.CACHE_IMAGE_NAME }}:cache-${{ github.head_ref || github.ref_name }},mode=max
+          cache-from: ${{ steps.cache.outputs.cache-from }}
+          cache-to: ${{ steps.cache.outputs.cache-to }}
 
       - name: Inspect
         id: inspect
@@ -158,8 +187,8 @@ jobs:
           build-args: |
             BASEIMAGE_VERSION=${{ env.BASEIMAGE_VERSION }}
             GNUCASH_VERSION=${{ env.GNUCASH_VERSION }}
-          cache-from: type=registry,ref=${{ env.CACHE_IMAGE_NAME }}:cache-${{ startsWith(github.ref, 'refs/tags/') && 'main' || (github.head_ref || github.ref_name) }}
-          cache-to: type=registry,ref=${{ env.CACHE_IMAGE_NAME }}:cache-${{ startsWith(github.ref, 'refs/tags/') && 'main' || (github.head_ref || github.ref_name) }},mode=max
+          cache-from: ${{ steps.cache.outputs.cache-from }}
+          cache-to: ${{ steps.cache.outputs.cache-to }}
 
       - name: Update Docker Hub description
         if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
