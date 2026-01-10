@@ -7,28 +7,60 @@ setup_container_daemon() {
 
   # Create a service for testing that runs after the 'app' service in order to
   # notify us that the 'app' has been started.
-  NOTIFIER_DIR="${TESTS_WORKDIR}/service.d/appready"
-  mkdir -p "${NOTIFIER_DIR}"
-  touch "${NOTIFIER_DIR}/app.dep"
-  cat << EOF > "${NOTIFIER_DIR}/run"
-#!/bin/sh
-# Give app run script some time to exec gnucash process.
-for i in {1..10}; do
+  APPREADY_SERVICE="${TESTS_WORKDIR}/service.d/appready"
+  mkdir -p "${APPREADY_SERVICE}"
+  export CONTAINER_COM_DIR='/appready-com'
+  touch "${APPREADY_SERVICE}/app.dep"
+  cat << EOF > "${APPREADY_SERVICE}/run"
+#!/usr/bin/bash
+
+log='${CONTAINER_COM_DIR}/log'
+
+> "\$log"  # Start appready debugging log.
+echo "waiting for gnucash pid" >> "\$log"
+# Give app run script some time to exec the gnucash process.
+for countdown in {10..0}; do
   # Only care about gnucash child process of PID 1 (init),
   # not other random gnucash invocations from parallel tests.
   gnucash_pid=\$(pgrep -P 1 gnucash)
-  [ -n "\$gnucash_pid" ] && break
+  echo "waiting \$countdown; pid=\$gnucash_pid" >> "\$log"
+  [[ -n "\$gnucash_pid" ]] && break
   sleep 1
 done
-cat "/proc/\$gnucash_pid/environ" 2>&1 | tr '\0' '\n' > '/tmp/appenv'
-touch '/tmp/appready'
+
+if  [[ \${countdown} -eq 0 ]]; then
+  echo "Docker gnucash app startup wait timeout." >> "\$log"
+  echo "Docker gnucash app startup wait timeout." \
+    > '${CONTAINER_COM_DIR}/appenv'
+else
+  ls -la "/proc" >> "\$log"
+  ls -la "/proc/\$gnucash_pid" >> "\$log"
+  # Capture the running app's environment, \n delimited.
+  cat "/proc/\$gnucash_pid/environ" 2>&1 \
+    | tr '\0' '\n' \
+    | sed -e '/^$/d' \
+    > '${CONTAINER_COM_DIR}/appenv'
+fi
+
+# Create a shell script that sets the environment like the app has it. Make
+# sure this correctly handles embedded white space by quoting env values.
+echo "env -i" > "${CONTAINER_COM_DIR}/appenv.sh"
+cat '${CONTAINER_COM_DIR}/appenv' \
+  | sed -e 's/^/export "/;s/$/"/' \
+  >> '${CONTAINER_COM_DIR}/appenv.sh'
+touch '${CONTAINER_COM_DIR}/appready'
 EOF
-  chmod 755 "${NOTIFIER_DIR}/run"
+  chmod 755 "${APPREADY_SERVICE}/run"
   # The 'appready' service is not started unless the 'default' service
   # (transitively) depends on it, so we have to add that dependence too.
-  DEFAULT_DIR="${TESTS_WORKDIR}/service.d/default"
-  mkdir -p "${DEFAULT_DIR}"
-  touch "${DEFAULT_DIR}/appready.dep"
+  DEFAULT_SERVICE="${TESTS_WORKDIR}/service.d/default"
+  mkdir -p "${DEFAULT_SERVICE}"
+  touch "${DEFAULT_SERVICE}/appready.dep"
+
+  # The appready service communicates with the host by putting files in a
+  # mounted volume.
+  export HOST_COM_DIR="${TESTS_WORKDIR}/appready-com"
+  mkdir -p "${HOST_COM_DIR}"
 
   # Start the container in daemon mode.
   run docker run \
@@ -36,17 +68,18 @@ EOF
     --name "$CONTAINER_DAEMON_NAME" \
     -e USER_ID="$(id -u)" \
     -e GROUP_ID="$(id -g)" \
-    -v "${NOTIFIER_DIR}:/etc/services.d/appready" \
-    -v "${DEFAULT_DIR}/appready.dep:/etc/services.d/default/appready.dep" \
+    -v "${APPREADY_SERVICE}:/etc/services.d/appready" \
+    -v "${DEFAULT_SERVICE}/appready.dep:/etc/services.d/default/appready.dep" \
+    -v "${HOST_COM_DIR}:${CONTAINER_COM_DIR}" \
     "${DOCKER_EXTRA_OPTS[@]}" \
     "${DOCKER_IMAGE}" \
     "${DOCKER_CMD[@]}" \
     2>/dev/null
-  [ "$status" -eq 0 ] || force_error "docker command failure: $output"
+  [[ "$status" -eq 0 ]] || force_error "docker command failure: $output"
 }
 
 teardown_container_daemon() {
-  [ -n "$CONTAINER_DAEMON_NAME" ]
+  [[ -n "$CONTAINER_DAEMON_NAME" ]]
 
   echo "Stopping docker container..."
   # We kill instead of stop the container since in the test environment we
@@ -63,29 +96,27 @@ teardown_container_daemon() {
 
 # Execute command in container.
 exec_in_container() {
-  [ -n "$CONTAINER_DAEMON_NAME" ]
+  [[ -n "$CONTAINER_DAEMON_NAME" ]]
   docker exec "$CONTAINER_DAEMON_NAME" "$@"
 }
 
 getlog_container_daemon() {
-  [ -n "$CONTAINER_DAEMON_NAME" ]
+  [[ -n "$CONTAINER_DAEMON_NAME" ]]
   docker logs -t "$CONTAINER_DAEMON_NAME"
 }
 
 wait_for_container_daemon() {
   echo "Waiting for the docker container daemon to be ready..."
-  TIMEOUT=60
-  while [ "$TIMEOUT" -ne 0 ]; do
-    run exec_in_container sh -c "[ -f /tmp/appready ]"
-    if [ "$status" -eq 0 ]; then
-      break
-    fi
-    echo "waiting $TIMEOUT..."
+  timeout=120
+  for countdown in $(eval echo {$timeout..0}); do
+    [[ -f ${HOST_COM_DIR}/appready ]] && break
+    (( timeout % 10 == 0 )) && echo "waiting ${countdown}..."
     sleep 1
-    TIMEOUT=$((TIMEOUT - 1))
   done
 
-  if [ "$TIMEOUT" -eq 0 ]; then
+  if  [[ ${countdown} -ne 0 ]]; then
+    echo "Docker container ready."
+  else
     echo "Docker container daemon wait timeout."
     echo "====================================================================="
     echo " DOCKER LOGS"
@@ -95,8 +126,6 @@ wait_for_container_daemon() {
     echo " END DOCKER LOGS"
     echo "====================================================================="
     false
-  else
-    echo "Docker container ready."
   fi
 }
 
@@ -107,15 +136,20 @@ get_app_env_var() {
   # We must wait for the container to have started to see the app environment.
   wait_for_container_daemon
 
-  run exec_in_container sh -c 'grep "^'${name}'=" "/tmp/appenv"'
-  echo ${output}  # Helps debugging env errors
-  run sh -c "echo ${output} | sed -e 's/^${name}=//'"
+  echo -n "appenv: "  # Help debugging on error.
+  cat "${HOST_COM_DIR}/appenv"  # Help debugging on error.
+  echo "searching app env for key: ${name}"
+  local value=$(grep "^${name}=" "${HOST_COM_DIR}/appenv" \
+                | sed -e "s/^${name}=//")
+  echo "value: ${value}"
+  run echo "${value}"
 }
 
 # Execute command in container app environment.
 exec_in_container_app_env() {
   wait_for_container_daemon
-  run exec_in_container cat '/tmp/appenv'
-  echo "app_env:" "${lines[@]}"
-  exec_in_container env "${lines[@]}" "$@"
+
+  # This function is already called with run. We don't want to use nested
+  # 'run' to capture output overwriting $lines[@]. So we captue it by hand.
+  exec_in_container sh -c ". ${CONTAINER_COM_DIR}/appenv.sh; $*"
 }
