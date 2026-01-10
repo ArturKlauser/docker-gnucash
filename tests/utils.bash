@@ -1,8 +1,5 @@
-load setup_common
-load setup_container_daemon
-
-load teardown_common
-load teardown_container_daemon
+load utils_common
+load utils_container
 
 setup_all() {
   setup_common

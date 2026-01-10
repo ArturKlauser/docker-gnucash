@@ -10,18 +10,18 @@ teardown_file() {
   teardown_all
 }
 
-@test "Checking that yelp is installed properly..." {
-  run docker exec "${CONTAINER_DAEMON_NAME}" which yelp
+@test "Checking that yelp is installed..." {
+  run exec_in_container which yelp
   echo "exit status: $status (which yelp)"
   [ "$status" -eq 0 ]
   yelp_app="${lines[0]}"
-  run docker exec "${CONTAINER_DAEMON_NAME}" test -x "${yelp_app}"
+  run exec_in_container test -x "${yelp_app}"
   echo "exit status: $status (test -x \"${yelp_app}\")"
   [ "$status" -eq 0 ]
 }
 
 @test "Checking that yelp runs..." {
-  run docker exec "${CONTAINER_DAEMON_NAME}" yelp -h
+  run exec_in_container yelp -h
   echo "exit status: $status (yelp -h)"
   [ "$status" -eq 0 ]
   echo "lines[0]: ${lines[0]}"
