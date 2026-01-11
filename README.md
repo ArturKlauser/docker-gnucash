@@ -111,3 +111,14 @@ To run the locally built image:
 ```bash
 USER_ID=$(id -u) GROUP_ID=$(id -g) IMAGE=gnucash docker compose up -d
 ```
+### Build Arguments
+
+| Argument | Description | Default |
+| :--- | :--- | :--- |
+| `BASEIMAGE_VERSION` | Version of `docker-baseimage-gui` to start with. | unset - must be set on command line |
+| `GNUCASH_VERSION` | Version of `gnucash` package to install. | unset - must be set on command line |
+| `WITH_DOCS` | Set to `false` to build the image without GnuCash documentation. | `true` |
+
+Note, however, that at the time of writing (Jan 2026), this only saves ~90 MB
+(~8%) of docker image size. The majority of the image size of ~1.1 GB is the
+`gnucash` package itself and its dependencies.
