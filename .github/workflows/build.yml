@@ -15,7 +15,6 @@ env:
   GNUCASH_VERSION: 5.13
   PLATFORMS: linux/amd64,linux/arm64
   DOCKER_IMAGE_NAME: ${{ vars.DOCKERHUB_USERNAME }}/gnucash
-  CACHE_IMAGE_NAME: ghcr.io/${{ github.repository }}
 
 jobs:
   build:
@@ -55,24 +54,35 @@ jobs:
         id: cache
         run: |
           # The cache image name must be lowercase.
-          CACHE_IMAGE_NAME="${{ env.CACHE_IMAGE_NAME }}"
+          CACHE_IMAGE_NAME="ghcr.io/${{ github.repository }}"
           CACHE_IMAGE_NAME="${CACHE_IMAGE_NAME,,}"
-          echo "cache-image-name=${CACHE_IMAGE_NAME}" >> $GITHUB_OUTPUT
 
-          # For PRs, we want to read from the main branch cache and the PR's own cache,
-          # but only write to the PR's cache.
+          sanitize() {
+            echo "$1" | sed 's/[^a-zA-Z0-9._-]/\_/g'
+          }
+
           if [[ $GITHUB_REF == refs/pull/* ]]; then
-            CACHE_FROM="type=registry,ref=${CACHE_IMAGE_NAME}:cache-main,ref=${CACHE_IMAGE_NAME}:cache-${{ github.head_ref }}"
-            CACHE_TO="type=registry,ref=${CACHE_IMAGE_NAME}:cache-${{ github.head_ref }},mode=max"
-          # For pushes to the main branch that are the result of a PR merge, we
-          # want to read from the main branch cache and the PR's cache, but
-          # only write to the main branch cache.
-          elif [[ $GITHUB_REF == 'refs/heads/main' && github.event.pull_request.merged == 'true' ]]; then
-            CACHE_FROM="type=registry,ref=${CACHE_IMAGE_NAME}:cache-main,ref=${CACHE_IMAGE_NAME}:cache-${{ github.event.pull_request.head.ref }}"
+            # For PRs, we want to read from the main branch cache and the PR's own cache,
+            # but only write to the PR's cache.
+            REF_NAME="${{ github.head_ref }}"
+            CLEAN_REF=$(sanitize "$REF_NAME")
+            CACHE_FROM="type=registry,ref=${CACHE_IMAGE_NAME}:cache-main,ref=${CACHE_IMAGE_NAME}:cache-${CLEAN_REF}"
+            CACHE_TO="type=registry,ref=${CACHE_IMAGE_NAME}:cache-${CLEAN_REF},mode=max"
+
+          elif [[ $GITHUB_REF == 'refs/heads/main' ]]; then
+            # For pushes to the main branch, we read from and write to the main branch cache.
+            CACHE_FROM="type=registry,ref=${CACHE_IMAGE_NAME}:cache-main"
             CACHE_TO="type=registry,ref=${CACHE_IMAGE_NAME}:cache-main,mode=max"
-          # For all other cases (e.g., direct pushes to main, tag builds), we
-          # read from and write to the main branch cache.
+
+          elif [[ $GITHUB_REF == refs/heads/* ]]; then
+            # For other branches, read from main and branch cache, write to branch cache.
+            REF_NAME=${GITHUB_REF#refs/heads/}
+            CLEAN_REF=$(sanitize "$REF_NAME")
+            CACHE_FROM="type=registry,ref=${CACHE_IMAGE_NAME}:cache-main,ref=${CACHE_IMAGE_NAME}:cache-${CLEAN_REF}"
+            CACHE_TO="type=registry,ref=${CACHE_IMAGE_NAME}:cache-${CLEAN_REF},mode=max"
+
           else
+            # For all other cases (e.g., tag builds), we read from and write to the main branch cache.
             CACHE_FROM="type=registry,ref=${CACHE_IMAGE_NAME}:cache-main"
             CACHE_TO="type=registry,ref=${CACHE_IMAGE_NAME}:cache-main,mode=max"
           fi
