@@ -52,6 +52,8 @@ jobs:
 
       - name: Prepare cache tags
         id: cache
+        env:
+          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
         run: |
           # The cache image name must be lowercase.
           CACHE_IMAGE_NAME="ghcr.io/${{ github.repository }}"
@@ -73,6 +75,20 @@ jobs:
             # For pushes to the main branch, we read from and write to the main branch cache.
             CACHE_FROM="type=registry,ref=${CACHE_IMAGE_NAME}:cache-main"
             CACHE_TO="type=registry,ref=${CACHE_IMAGE_NAME}:cache-main,mode=max"
+
+            # If this push is a result of a PR merge, try to read from that PR's cache as well.
+            # We parse the commit message to find the source branch.
+            # Match: "Merge pull request #<number> from <repo_owner>/<branch>" or "... from <branch>"
+            if [[ "$COMMIT_MESSAGE" =~ Merge\ pull\ request\ \#[0-9]+\ from\ (.*) ]]; then
+              SOURCE_REF="${BASH_REMATCH[1]}"
+              # If the source ref starts with the repo owner (internal PR), strip it to match head_ref
+              # format used in PR builds.
+              REPO_OWNER="${{ github.repository_owner }}"
+              SOURCE_REF=${SOURCE_REF#$REPO_OWNER/}
+
+              CLEAN_REF=$(sanitize "$SOURCE_REF")
+              CACHE_FROM="${CACHE_FROM},ref=${CACHE_IMAGE_NAME}:cache-${CLEAN_REF}"
+            fi
 
           elif [[ $GITHUB_REF == refs/heads/* ]]; then
             # For other branches, read from main and branch cache, write to branch cache.
