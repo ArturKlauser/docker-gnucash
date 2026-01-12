@@ -1,15 +1,3 @@
-#!/bin/env bats
-
-load utils
-
-setup_file() {
-  setup_all
-}
-
-teardown_file() {
-  teardown_all
-}
-
 @test "Checking that yelp is installed..." {
   run exec_in_container which yelp
   echo "exit status: $status (which yelp)"

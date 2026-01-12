@@ -1,19 +1,6 @@
-#!/bin/env bats
-
-load utils
-
-setup_file() {
-  setup_all
-}
-
-teardown_file() {
-  teardown_all
-}
-
 @test "Checking that /config directory exists and is owned by app user/group..." {
   # Permissions of imported volumes are adjusted during startup, so we have to
   # wait for this to happen before checking.
-  wait_for_container_daemon
   run exec_in_container runuser -u app -- test -e /config
   echo "exit status: $status (runuser -u app -- test -e /config)"
   [ "$status" -eq  0 ]  # /config exists
@@ -29,7 +16,6 @@ teardown_file() {
 }
 
 @test "Checking that /data directory exists and is owned by app user/group..." {
-  wait_for_container_daemon
   run exec_in_container runuser -u app -- test -e /data
   echo "exit status: $status (runuser -u app -- test -e /data)"
   [ "$status" -eq  0 ]  # /data exists

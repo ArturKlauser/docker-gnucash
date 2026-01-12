@@ -1,15 +1,3 @@
-#!/bin/env bats
-
-load utils
-
-setup_file() {
-  setup_all
-}
-
-teardown_file() {
-  teardown_all
-}
-
 @test "Checking that Finance::Quote Perl module is installed..." {
   run exec_in_container perl -mFinance::Quote -e 1
   echo "exit status: $status (perl -mFinance::Quote -e 1)"
