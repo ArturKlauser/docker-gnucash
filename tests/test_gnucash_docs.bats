@@ -2,14 +2,6 @@
 
 load utils
 
-setup_file() {
-  setup_all
-}
-
-teardown_file() {
-  teardown_all
-}
-
 @test "Checking that GnuCash documentation is installed..." {
   run exec_in_container test -d /usr/share/doc/gnucash-docs
   echo "exit status: $status (test -d /usr/share/doc/gnucash-docs)"

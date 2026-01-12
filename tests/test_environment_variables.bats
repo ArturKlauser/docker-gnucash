@@ -2,14 +2,6 @@
 
 load utils
 
-setup_file() {
-  setup_all
-}
-
-teardown_file() {
-  teardown_all
-}
-
 #---
 # Container wide environment variables; set in image
 #---
