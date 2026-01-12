@@ -19,8 +19,12 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read   # Required for the 'actions/checkout' step
+      packages: write  # Allows pushing/writing to GHCR
     services:
       registry:
+        # Ephemeral docker registry for storing images between build and test.
         image: registry:2
         ports:
           - 5000:5000
@@ -28,7 +32,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup BATS
+      - name: Set up BATS
         uses: mig4/setup-bats@v1
         with:
           bats-version: 1.13.0
@@ -43,6 +47,54 @@ jobs:
         with:
           driver-opts: network=host
 
+      - name: Login to GitHub Container Registry (GHCR)
+        uses: docker/login-action@v3
+        with:
+          # Persistent docker registry for caching image layers across CI runs.
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Prepare cache tags
+        id: cache
+        run: |
+          # The cache image name must be lowercase.
+          CACHE_IMAGE_NAME="ghcr.io/${{ github.repository }}/build-cache"
+          CACHE_IMAGE_NAME="${CACHE_IMAGE_NAME,,}"
+
+          sanitize() {
+            echo "$1" | sed 's/[^a-zA-Z0-9._-]/\_/g'
+          }
+
+          if [[ $GITHUB_REF == refs/pull/* ]]; then
+            # For PRs, we want to read from the main branch cache and the PR's own cache,
+            # but only write to the PR's cache.
+            REF_NAME="${{ github.head_ref }}"
+            CLEAN_REF=$(sanitize "$REF_NAME")
+            CACHE_FROM="type=registry,ref=${CACHE_IMAGE_NAME}:main,ref=${CACHE_IMAGE_NAME}:${CLEAN_REF}"
+            CACHE_TO="type=registry,ref=${CACHE_IMAGE_NAME}:${CLEAN_REF},mode=max"
+
+          elif [[ $GITHUB_REF == 'refs/heads/main' ]]; then
+            # For pushes to the main branch, we read from and write to the main branch cache.
+            CACHE_FROM="type=registry,ref=${CACHE_IMAGE_NAME}:main"
+            CACHE_TO="type=registry,ref=${CACHE_IMAGE_NAME}:main,mode=max"
+
+          elif [[ $GITHUB_REF == refs/heads/* ]]; then
+            # For other branches, read from main and branch cache, write to branch cache.
+            REF_NAME=${GITHUB_REF#refs/heads/}
+            CLEAN_REF=$(sanitize "$REF_NAME")
+            CACHE_FROM="type=registry,ref=${CACHE_IMAGE_NAME}:main,ref=${CACHE_IMAGE_NAME}:${CLEAN_REF}"
+            CACHE_TO="type=registry,ref=${CACHE_IMAGE_NAME}:${CLEAN_REF},mode=max"
+
+          else
+            # For all other cases (e.g., tag builds), we read from and write to the main branch cache.
+            CACHE_FROM="type=registry,ref=${CACHE_IMAGE_NAME}:main"
+            CACHE_TO="type=registry,ref=${CACHE_IMAGE_NAME}:main,mode=max"
+          fi
+
+          echo "cache-from=${CACHE_FROM}" >> $GITHUB_OUTPUT
+          echo "cache-to=${CACHE_TO}" >> $GITHUB_OUTPUT
+
       - name: Build and push to local registry
         uses: docker/build-push-action@v5
         with:
@@ -52,8 +104,10 @@ jobs:
           build-args: |
             BASEIMAGE_VERSION=${{ env.BASEIMAGE_VERSION }}
             GNUCASH_VERSION=${{ env.GNUCASH_VERSION }}
+          cache-from: ${{ steps.cache.outputs.cache-from }}
+          cache-to: ${{ steps.cache.outputs.cache-to }}
 
-      - name: Inspect
+      - name: Inspect image manifest
         id: inspect
         run: |
           # Get the metadata of all platform images from the multi-platform manifest of the above build.
@@ -87,17 +141,17 @@ jobs:
             echo "Running tests on image ${DOCKER_IMAGE}..."
             docker pull ${DOCKER_IMAGE}
             docker run --rm ${DOCKER_IMAGE} sh -c 'echo Testing image on $(uname -m)...'
-            bats -j $(nproc) tests
+            bats -j $(nproc) --trace tests
           done
 
-      - name: Login to Docker Hub
+      - name: Login to Dockerhub
         if: github.event_name != 'pull_request'
         uses: docker/login-action@v3
         with:
           username: ${{ vars.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Prepare Github Metadata
+      - name: Prepare image metadata
         id: meta
         if: github.event_name != 'pull_request'
         run: |
@@ -148,8 +202,10 @@ jobs:
           build-args: |
             BASEIMAGE_VERSION=${{ env.BASEIMAGE_VERSION }}
             GNUCASH_VERSION=${{ env.GNUCASH_VERSION }}
+          # The local docker daemon is caching the image layers from above
+          # build, so this build should be all cached and thus very fast.
 
-      - name: Update Docker Hub description
+      - name: Update Dockerhub description
         if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
         uses: peter-evans/dockerhub-description@v4
         with:
