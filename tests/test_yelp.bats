@@ -2,6 +2,7 @@
 
 load 'setup_suite.bash'
 
+
 @test "Checking that yelp is installed..." {
   run exec_in_container which yelp
   echo "exit status: $status (which yelp)"

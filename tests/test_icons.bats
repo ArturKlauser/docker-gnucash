@@ -2,6 +2,7 @@
 
 load 'setup_suite.bash'
 
+
 @test "Checking that app web icons are installed..." {
   icon_dir='/opt/noVNC/app/images/icons'
   run exec_in_container test -d "${icon_dir}"

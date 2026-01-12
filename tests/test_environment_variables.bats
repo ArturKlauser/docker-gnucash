@@ -2,6 +2,7 @@
 
 load 'setup_suite.bash'
 
+
 #---
 # Container wide environment variables; set in image
 #---
