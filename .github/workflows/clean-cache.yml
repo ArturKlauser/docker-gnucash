@@ -1,0 +1,21 @@
+name: Clean build cache
+
+on:
+  schedule:
+    - cron: '0 0 * * *' # daily
+  workflow_dispatch:
+
+jobs:
+  cleanup:
+    name: Cleanup GHCR build cache
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+    steps:
+      - name: Cleanup container images
+        uses: dataaxiom/ghcr-cleanup-action@v1
+        with:
+          package: build-cache
+          older-than: 30 days
+          exclude-tags: main
+          dry-run: false
