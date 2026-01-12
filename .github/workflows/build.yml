@@ -58,8 +58,8 @@ jobs:
         id: cache
         run: |
           # The cache image name must be lowercase.
-          #CACHE_IMAGE_NAME="ghcr.io/${{ github.repository }}/gnucash-build"
-          CACHE_IMAGE_NAME="ghcr.io/${{ github.repository_owner }}/gnucash-build"
+          CACHE_IMAGE_NAME="ghcr.io/${{ github.repository }}/build"
+          #CACHE_IMAGE_NAME="ghcr.io/${{ github.repository_owner }}/gnucash-build"
           CACHE_IMAGE_NAME="${CACHE_IMAGE_NAME,,}"
 
           sanitize() {
