@@ -1,6 +1,7 @@
 #!/bin/env bats
 
-load 'setup_suite.bash'
+load utils
+
 
 
 @test "Checking that Finance::Quote Perl module is installed..." {
