@@ -20,9 +20,9 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
-    #permissions:
-    #  contents: read   # Required for the 'actions/checkout' step
-    #  packages: write  # Allows pushing/writing to GHCR
+    permissions:
+      contents: read   # Required for the 'actions/checkout' step
+      packages: write  # Allows pushing/writing to GHCR
     services:
       registry:
         image: registry:2
