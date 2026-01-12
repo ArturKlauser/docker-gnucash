@@ -2,8 +2,6 @@
 
 load utils
 
-
-
 #---
 # Container wide environment variables; set in image
 #---

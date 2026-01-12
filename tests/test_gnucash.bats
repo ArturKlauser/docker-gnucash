@@ -2,8 +2,6 @@
 
 load utils
 
-
-
 @test "Checking that /startapp.sh exists..." {
   run exec_in_container test -f /startapp.sh
   echo "exit status: $status (test -f /startapp.sh)"

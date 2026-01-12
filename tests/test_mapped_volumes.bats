@@ -2,8 +2,6 @@
 
 load utils
 
-
-
 @test "Checking that /config directory exists and is owned by app user/group..." {
   # Permissions of imported volumes are adjusted during startup, so we have to
   # wait for this to happen before checking.
