@@ -106,8 +106,16 @@ jobs:
             CACHE_TO="type=registry,ref=${CACHE_IMAGE_NAME}:main,mode=max"
           fi
 
-          echo "cache-from=${CACHE_FROM}" >> $GITHUB_OUTPUT
-          echo "cache-to=${CACHE_TO}" >> $GITHUB_OUTPUT
+          {
+            echo "cache-from<<EOF"
+            echo "${CACHE_FROM}"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+          {
+            echo "cache-to<<EOF"
+            echo "${CACHE_TO}"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
 
       - name: Build and push to local registry
         uses: docker/build-push-action@v5
