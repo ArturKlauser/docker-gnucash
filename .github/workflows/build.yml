@@ -10,6 +10,11 @@ on:
     branches:
       - 'main'
 
+concurrency:
+  # Cancel unfinished CI/CD runs if a new run starts on the same branch.
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: true
+
 env:
   BASEIMAGE_VERSION: ubuntu-24.04-v4
   GNUCASH_VERSION: 5.13

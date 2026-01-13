@@ -5,6 +5,11 @@ on:
     - cron: '21 3 * * 0' # Every Sunday at 3:21 am
   workflow_dispatch:
 
+concurrency:
+  # Cancel unfinished cleanup runs if a new run starts.
+  group: clean-build-cache
+  cancel-in-progress: true
+
 jobs:
   cleanup:
     name: Cleanup GHCR build cache
