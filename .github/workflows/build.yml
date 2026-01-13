@@ -216,18 +216,19 @@ jobs:
 
           echo "tags=${TAGS}" >> $GITHUB_OUTPUT
 
-      - name: Build and push to Dockerhub
+      - name: Push to Dockerhub
         if: github.event_name != 'pull_request'
-        uses: docker/build-push-action@v5
-        with:
-          platforms: ${{ env.PLATFORMS }}
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          build-args: |
-            BASEIMAGE_VERSION=${{ env.BASEIMAGE_VERSION }}
-            GNUCASH_VERSION=${{ env.GNUCASH_VERSION }}
-          # The local docker daemon is caching the image layers from above
-          # build, so this build should be all cached and thus very fast.
+        run: |
+          # Split the comma-separated tags and format them as arguments
+          IFS=',' read -ra TAG_ARRAY <<< "${{ steps.meta.outputs.tags }}"
+          TAG_ARGS=""
+          for tag in "${TAG_ARRAY[@]}"; do
+            TAG_ARGS="$TAG_ARGS -t $tag"
+          done
+
+          # Use imagetools create to copy the multi-platform image from the local registry to Docker Hub.
+          # This avoids rebuilding the image and ensures the exact image tested is pushed.
+          docker buildx imagetools create $TAG_ARGS localhost:5000/${{ env.DOCKER_IMAGE_NAME }}:github-ci
 
       - name: Update Dockerhub description
         if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
