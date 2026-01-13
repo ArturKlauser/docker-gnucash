@@ -106,6 +106,7 @@ jobs:
             CACHE_TO="type=registry,ref=${CACHE_IMAGE_NAME}:main,mode=max"
           fi
 
+          # Use HEREDOC syntax to preserve newline characters in cache-from/to strings.
           {
             echo "cache-from<<EOF"
             echo "${CACHE_FROM}"
