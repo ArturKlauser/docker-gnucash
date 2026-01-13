@@ -53,7 +53,7 @@ RUN apt-get update && \
     #     files that are necessary for other help viewers, e.g., for a web
     #     browser.
     # echo "path-include=/usr/share/doc/gnucash-docs*" \
-    #     > /etc/dpkg/dpkg.cfg.d/z-gnucash-docs \
+    #     > /etc/dpkg/dpkg.cfg.d/z-gnucash-docs
     apt-get install -y --no-install-recommends \
         gnucash=1:${GNUCASH_VERSION}* \
         libfinance-quote-perl \
