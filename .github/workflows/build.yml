@@ -20,8 +20,9 @@ jobs:
   build:
     runs-on: ubuntu-latest
     permissions:
-      contents: read   # Required for the 'actions/checkout' step
-      packages: write  # Allows pushing/writing to GHCR
+      contents: read       # Required for the 'actions/checkout' step
+      pull-requests: read  # Required for the 'gh api' call
+      packages: write      # Allows pushing/writing to GHCR
     services:
       registry:
         # Ephemeral docker registry for storing images between build and test.
