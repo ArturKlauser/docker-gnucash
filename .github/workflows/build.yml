@@ -166,7 +166,7 @@ jobs:
             ' '
           ) }})
           if [[ "${#digests[@]}" -ne "${#architectures[@]}" ]]; then
-            echo "::error::Digest and arch array lengths do no match:" \
+            echo "::error::Digest and arch array lengths do not match:" \
                  "[${architectures[@]}] [${digests[@]}]"
             exit 1
           fi

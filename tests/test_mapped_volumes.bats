@@ -2,7 +2,7 @@
 
 load utils
 
-@test "Check /config directory existence and ownership" {
+@test "Checking /config directory existence and ownership" {
   # Permissions of imported volumes are adjusted during startup, so we have to
   # wait for this to happen before checking.
   wait_for_container_daemon
