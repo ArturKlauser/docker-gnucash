@@ -1,7 +1,14 @@
-# <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/18/GnuCash_logo.svg/500px-GnuCash_logo.svg.png" width="64" align="absbottom" alt="GnuCash Logo"> Docker container for GnuCash
+# <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/18/GnuCash_logo.svg/500px-GnuCash_logo.svg.png"
+       width="64" align="absbottom" alt="GnuCash Logo"> Docker container for
+       GnuCash
 
-[![Build Status](https://img.shields.io/github/actions/workflow/status/arturklauser/docker-gnucash/build.yml?branch=main&style=for-the-badge)](https://github.com/arturklauser/docker-gnucash/actions/workflows/build.yml)
-[![Docker Image Size](https://img.shields.io/docker/image-size/arturklauser/gnucash/latest?style=for-the-badge)](https://hub.docker.com/repository/docker/arturklauser/gnucash/)
+[![Build Status][build-badge]][build-link]
+[![Docker Image Size][size-badge]][size-link]
+
+[build-badge]: https://img.shields.io/github/actions/workflow/status/arturklauser/docker-gnucash/build.yml?branch=main&style=for-the-badge
+[build-link]: https://github.com/arturklauser/docker-gnucash/actions/workflows/build.yml
+[size-badge]: https://img.shields.io/docker/image-size/arturklauser/gnucash/latest?style=for-the-badge
+[size-link]: https://hub.docker.com/repository/docker/arturklauser/gnucash/
 
 This project provides a Docker container for
 <a href="https://www.gnucash.org/">GnuCash</a>.
@@ -85,26 +92,75 @@ docker run -d \
 
 ### Environment Variables used by Docker Compose
 
-| Variable | Description | Default |
-| :--- | :--- | :--- |
-| `USER_ID` | User ID of the user running the application. | unset - must be set on command line|
-| `GROUP_ID` | Group ID of the user running the application. | unset - must be set on command line|
-| `TZ` | Timezone (e.g., `America/New_York`). | `America/Los_Angeles` |
-| `CONFIG_DIR` | Host path for the application configuration directory. | `./config` |
-| `DATA_DIR` | Host path for the GnuCash data files directory. | `./data` |
+<table>
+  <thead>
+    <tr>
+      <th>Variable</th>
+      <th>Description</th>
+      <th>Default</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>USER_ID</code></td>
+      <td>User ID of the user running the application.</td>
+      <td>unset - must be set on command line</td>
+    </tr>
+    <tr>
+      <td><code>GROUP_ID</code></td>
+      <td>Group ID of the user running the application.</td>
+      <td>unset - must be set on command line</td>
+    </tr>
+    <tr>
+      <td><code>TZ</code></td>
+      <td>Timezone (e.g., <code>America/New_York</code>).</td>
+      <td><code>America/Los_Angeles</code></td>
+    </tr>
+    <tr>
+      <td><code>CONFIG_DIR</code></td>
+      <td>Host path for the application configuration directory.</td>
+      <td><code>./config</code></td>
+    </tr>
+    <tr>
+      <td><code>DATA_DIR</code></td>
+      <td>Host path for the GnuCash data files directory.</td>
+      <td><code>./data</code></td>
+    </tr>
+  </tbody>
+</table>
 
 ### Volumes
 
-| Volume | Description |
-| :--- | :--- |
-| `/config` | Stores application configuration, including generated SSL certificates (in `/config/certs`). |
-| `/data` | Stores GnuCash data files. |
+<table>
+  <thead>
+    <tr>
+      <th>Volume</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>/config</code></td>
+      <td>
+        Stores application configuration, including generated SSL certificates
+        (in <code>/config/certs</code>).
+      </td>
+    </tr>
+    <tr>
+      <td><code>/data</code></td>
+      <td>Stores GnuCash data files.</td>
+    </tr>
+  </tbody>
+</table>
 
 ## Local Image Build
 
 To build the image locally:
 ```bash
-docker build --build-arg BASEIMAGE_VERSION=ubuntu-24.04-v4 --build-arg GNUCASH_VERSION=5.13 -t gnucash .
+docker build \
+    --build-arg BASEIMAGE_VERSION=ubuntu-24.04-v4 \
+    --build-arg GNUCASH_VERSION=5.13 \
+    -t gnucash .
 ```
 
 To run the locally built image:
@@ -113,11 +169,35 @@ USER_ID=$(id -u) GROUP_ID=$(id -g) IMAGE=gnucash docker compose up -d
 ```
 ### Build Arguments
 
-| Argument | Description | Default |
-| :--- | :--- | :--- |
-| `BASEIMAGE_VERSION` | Version of `docker-baseimage-gui` to start with. | unset - must be set on command line |
-| `GNUCASH_VERSION` | Version of `gnucash` package to install. | unset - must be set on command line |
-| `WITH_DOCS` | Set to `false` to build the image without GnuCash documentation. | `true` |
+<table>
+  <thead>
+    <tr>
+      <th>Argument</th>
+      <th>Description</th>
+      <th>Default</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>BASEIMAGE_VERSION</code></td>
+      <td>Version of <code>docker-baseimage-gui</code> to start with.</td>
+      <td>unset - must be set on command line</td>
+    </tr>
+    <tr>
+      <td><code>GNUCASH_VERSION</code></td>
+      <td>Version of <code>gnucash</code> package to install.</td>
+      <td>unset - must be set on command line</td>
+    </tr>
+    <tr>
+      <td><code>WITH_DOCS</code></td>
+      <td>
+        Set to <code>false</code> to build the image without GnuCash
+        documentation.
+      </td>
+      <td><code>true</code></td>
+    </tr>
+  </tbody>
+</table>
 
 Note, however, that at the time of writing (Jan 2026), this only saves ~90 MB
 (~8%) of docker image size. The majority of the image size of ~1.1 GB is the
