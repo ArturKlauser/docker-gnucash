@@ -73,8 +73,8 @@ jobs:
             # but only write to the PR's cache.
             REF_NAME="${{ github.head_ref }}"
             CLEAN_REF=$(sanitize "$REF_NAME")
-            CACHE_FROM="type=registry,ref=${CACHE_IMAGE_NAME}:main
-            type=registry,ref=${CACHE_IMAGE_NAME}:${CLEAN_REF}"
+            CACHE_FROM="type=registry,ref=${CACHE_IMAGE_NAME}:${CLEAN_REF}
+            type=registry,ref=${CACHE_IMAGE_NAME}:main"
             CACHE_TO="type=registry,ref=${CACHE_IMAGE_NAME}:${CLEAN_REF},mode=max"
 
           elif [[ $GITHUB_REF == 'refs/heads/main' ]]; then
@@ -88,16 +88,16 @@ jobs:
             if [ -n "$PR_BRANCH" ] && [ "$PR_BRANCH" != "null" ]; then
               echo "Found PR source branch: $PR_BRANCH"
               CLEAN_REF=$(sanitize "$PR_BRANCH")
-              CACHE_FROM="${CACHE_FROM}
-              type=registry,ref=${CACHE_IMAGE_NAME}:${CLEAN_REF}"
+              CACHE_FROM="type=registry,ref=${CACHE_IMAGE_NAME}:${CLEAN_REF}
+              ${CACHE_FROM}"
             fi
 
           elif [[ $GITHUB_REF == refs/heads/* ]]; then
             # For other branches, read from main and branch cache, write to branch cache.
             REF_NAME=${GITHUB_REF#refs/heads/}
             CLEAN_REF=$(sanitize "$REF_NAME")
-            CACHE_FROM="type=registry,ref=${CACHE_IMAGE_NAME}:main
-            type=registry,ref=${CACHE_IMAGE_NAME}:${CLEAN_REF}"
+            CACHE_FROM="type=registry,ref=${CACHE_IMAGE_NAME}:${CLEAN_REF}
+            type=registry,ref=${CACHE_IMAGE_NAME}:main"
             CACHE_TO="type=registry,ref=${CACHE_IMAGE_NAME}:${CLEAN_REF},mode=max"
 
           else
