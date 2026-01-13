@@ -6,7 +6,8 @@ services:
     restart: unless-stopped
     ports:
       - "5800:5800"
-      # Port 5900 is NOT exposed to ensure access is only via the secure web interface.
+      # Port 5900 is NOT exposed to ensure access is only via the secure web
+      # interface.
     volumes:
       - "${CONFIG_DIR:-./config}:/config:rw"
       - "${DATA_DIR:-./data}:/data:rw"

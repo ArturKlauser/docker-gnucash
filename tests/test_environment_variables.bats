@@ -28,7 +28,7 @@ load utils
 # Gnucash process environment variables; set during container startup
 #---
 
-@test "Checking XDG_CONFIG_HOME gnucash environment variable points to /config..." {
+@test "Checking XDG_CONFIG_HOME points to /config" {
   get_app_env_var 'XDG_CONFIG_HOME'
   echo "exit status: $status (get_app_env_var 'XDG_CONFIG_HOME')"
   [ "$status" -eq 0 ]  # Environment variable could not be retrieved
@@ -36,7 +36,7 @@ load utils
   [[ "${lines[0]}" == "/config/"* ]]
 }
 
-@test "Checking XDG_DATA_HOME gnucash environment variable points to /config..." {
+@test "Checking XDG_DATA_HOME points to /config" {
   get_app_env_var 'XDG_DATA_HOME'
   echo "exit status: $status (get_app_env_var 'XDG_DATA_HOME')"
   [ "$status" -eq 0 ]  # Environment variable could not be retrieved
@@ -44,7 +44,7 @@ load utils
   [[ "${lines[0]}" == "/config/"* ]]
 }
 
-@test "Checking XDG_CACHE_HOME gnucash environment variable points to /config..." {
+@test "Checking XDG_CACHE_HOME points to /config" {
   get_app_env_var  'XDG_CACHE_HOME'
   echo "exit status: $status (get_app_env_var 'XDG_CACHE_HOME')"
   [ "$status" -eq 0 ]  # Environment variable could not be retrieved

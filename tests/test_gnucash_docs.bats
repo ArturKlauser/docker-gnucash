@@ -16,7 +16,8 @@ load utils
 
 @test "Checking that GnuCash guide index exists..." {
   run exec_in_container test -f /usr/share/help/C/gnucash-guide/index.docbook
-  echo "exit status: $status (test -f /usr/share/help/C/gnucash-guide/index.docbook)"
+  echo "exit status: $status" \
+       "(test -f /usr/share/help/C/gnucash-guide/index.docbook)"
   [ "$status" -eq 0 ]
 }
 
@@ -34,7 +35,8 @@ load utils
 
 @test "Checking that GnuCash manual index exists..." {
   run exec_in_container test -f /usr/share/help/C/gnucash-manual/index.docbook
-  echo "exit status: $status (test -f /usr/share/help/C/gnucash-manual/index.docbook)"
+  echo "exit status: $status" \
+       "(test -f /usr/share/help/C/gnucash-manual/index.docbook)"
   [ "$status" -eq 0 ]
 }
 

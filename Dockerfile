@@ -1,6 +1,8 @@
 # Define build arguments.
 # These args MUST be set on the "docker build" command line.
-# Example: docker build --build-arg BASEIMAGE_VERSION=ubuntu-24.04-v4 --build-arg GNUCASH_VERSION=5.13 .
+# Example:
+#   docker build --build-arg BASEIMAGE_VERSION=ubuntu-24.04-v4 \
+#                --build-arg GNUCASH_VERSION=5.13 .
 ARG BASEIMAGE_VERSION=undefined
 ARG GNUCASH_VERSION=undefined
 # The following args can optionally be overridden on the command line.
@@ -10,7 +12,8 @@ ARG WITH_DOCS=true
 FROM jlesage/baseimage-gui:${BASEIMAGE_VERSION}
 
 # Define working variables.
-# ARGs declared before FROM must be re-declared after FROM to be available in the build stage.
+# ARGs declared before FROM must be re-declared after FROM to be available in
+# the build stage.
 ARG BASEIMAGE_VERSION
 ARG GNUCASH_VERSION
 ARG WITH_DOCS
@@ -44,11 +47,13 @@ RUN apt-get update && \
         locales && \
     locale-gen en_US.UTF-8 && \
     # Enable installation of GnuCash documentation.
-    #   - This isn't necessary if we use Yelp, since it depends on the .xml help
-    #     files that are installed elsewhere (at /usr/share/help/*/gnucash*). The
-    #     files here are .html and .pdf files that are necessary for other help
-    #     viewers, e.g., for a web browser.
-    # echo "path-include=/usr/share/doc/gnucash-docs*" > /etc/dpkg/dpkg.cfg.d/z-gnucash-docs && \
+    #   - This isn't necessary if we use Yelp, since it depends on the .xml
+    #     help files that are installed elsewhere
+    #     (at /usr/share/help/*/gnucash*). The files here are .html and .pdf
+    #     files that are necessary for other help viewers, e.g., for a web
+    #     browser.
+    # echo "path-include=/usr/share/doc/gnucash-docs*" \
+    #     > /etc/dpkg/dpkg.cfg.d/z-gnucash-docs
     apt-get install -y --no-install-recommends \
         gnucash=1:${GNUCASH_VERSION}* \
         libfinance-quote-perl \
@@ -79,7 +84,8 @@ RUN if [ "${WITH_DOCS}" = "true" ]; then \
 RUN set-cont-env APP_NAME "GnuCash"
 
 # Install the application icon.
-RUN install_app_icon.sh "https://upload.wikimedia.org/wikipedia/commons/thumb/1/18/GnuCash_logo.svg/500px-GnuCash_logo.svg.png"
+RUN install_app_icon.sh \
+    "https://upload.wikimedia.org/wikipedia/commons/thumb/1/18/GnuCash_logo.svg/500px-GnuCash_logo.svg.png"
 
 # Define mountable directories.
 VOLUME ["/config"]
@@ -87,5 +93,6 @@ VOLUME ["/data"]
 
 # Expose ports.
 # 5800: Secure web interface
-# 5900: VNC (We do not expose this by default in documentation, but it's open in the container)
+# 5900: VNC (We do not expose this by default in documentation, but it's open in
+#       the container)
 EXPOSE 5800
