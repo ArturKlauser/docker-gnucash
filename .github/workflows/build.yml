@@ -128,6 +128,58 @@ jobs:
             echo "EOF"
           } >> "$GITHUB_OUTPUT"
 
+      - name: Prepare image metadata
+        id: meta
+        run: |
+          # Determine the Docker container tags.
+          TAGS=""
+
+          if [[ $GITHUB_REF == refs/tags/* ]]; then
+            # Git tags are used 'as is' as docker image tags.
+            VERSION=${GITHUB_REF#refs/tags/}
+            TAGS="${{ env.DOCKER_IMAGE_NAME }}:${VERSION}"
+
+            if [[ $VERSION =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+               # Apply semantic version (semver) expansion, i.e., latest X.Y.Z
+               # also becomes X.Y and X
+               V=${VERSION:1}
+               MAJOR_MINOR=${V%.*}
+               MAJOR=${MAJOR_MINOR%.*}
+               TAGS="$TAGS,${{ env.DOCKER_IMAGE_NAME }}:v${MAJOR_MINOR}"
+               TAGS="$TAGS,${{ env.DOCKER_IMAGE_NAME }}:v${MAJOR}"
+            fi
+
+          elif [[ $GITHUB_REF == 'refs/heads/main' ]]; then
+            # Git main branch commits are tagged with docker's default 'latest'
+            # tag.
+            VERSION=latest
+            TAGS="${{ env.DOCKER_IMAGE_NAME }}:${VERSION}"
+            TAGS="$TAGS,${{ env.DOCKER_IMAGE_NAME }}:"
+            TAGS="${TAGS}baseimage-gui-${{ env.BASEIMAGE_VERSION }}"
+            TAGS="${TAGS}-gnucash-${{ env.GNUCASH_VERSION }}"
+
+          elif [[ $GITHUB_REF == refs/heads/* ]]; then
+            # Other git branches are tagged with the branch name.
+            VERSION=${GITHUB_REF#refs/heads/}
+            # Basic sanitization (replace / with -)
+            VERSION=${VERSION//\//-}
+            TAGS="${{ env.DOCKER_IMAGE_NAME }}:${VERSION}"
+
+          elif [[ $GITHUB_REF == refs/pull/* ]]; then
+            # Pull requests are tagged with pr-<PR#>.
+            VERSION=pr-${{ github.event.number }}
+            TAGS="${{ env.DOCKER_IMAGE_NAME }}:${VERSION}"
+          fi
+
+          if [[ $GITHUB_REF == refs/tags/* ]]; then
+             LABEL_VERSION=${VERSION#v}
+          else
+             LABEL_VERSION=$VERSION
+          fi
+
+          echo "label_version=${LABEL_VERSION}" >> $GITHUB_OUTPUT
+          echo "tags=${TAGS}" >> $GITHUB_OUTPUT
+
       - name: Build and push to local registry
         uses: docker/build-push-action@v5
         with:
@@ -137,6 +189,7 @@ jobs:
           build-args: |
             BASEIMAGE_VERSION=${{ env.BASEIMAGE_VERSION }}
             GNUCASH_VERSION=${{ env.GNUCASH_VERSION }}
+            LABEL_VERSION=${{ steps.meta.outputs.label_version }}
           cache-from: ${{ steps.cache.outputs.cache-from }}
           cache-to: ${{ steps.cache.outputs.cache-to }}
 
@@ -198,51 +251,6 @@ jobs:
         with:
           username: ${{ vars.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      - name: Prepare image metadata
-        id: meta
-        if: github.event_name != 'pull_request'
-        run: |
-          # Determine the Docker container tags.
-          TAGS=""
-
-          if [[ $GITHUB_REF == refs/tags/* ]]; then
-            # Git tags are used 'as is' as docker image tags.
-            VERSION=${GITHUB_REF#refs/tags/}
-            TAGS="${{ env.DOCKER_IMAGE_NAME }}:${VERSION}"
-
-            if [[ $VERSION =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-               # Apply semantic version (semver) expansion, i.e., latest X.Y.Z
-               # also becomes X.Y and X
-               V=${VERSION:1}
-               MAJOR_MINOR=${V%.*}
-               MAJOR=${MAJOR_MINOR%.*}
-               TAGS="$TAGS,${{ env.DOCKER_IMAGE_NAME }}:v${MAJOR_MINOR}"
-               TAGS="$TAGS,${{ env.DOCKER_IMAGE_NAME }}:v${MAJOR}"
-            fi
-
-          elif [[ $GITHUB_REF == 'refs/heads/main' ]]; then
-            # Git main branch commits are tagged with docker's default 'latest'
-            # tag.
-            TAGS="${{ env.DOCKER_IMAGE_NAME }}:latest"
-            TAGS="$TAGS,${{ env.DOCKER_IMAGE_NAME }}:"
-            TAGS="${TAGS}baseimage-gui-${{ env.BASEIMAGE_VERSION }}"
-            TAGS="${TAGS}-gnucash-${{ env.GNUCASH_VERSION }}"
-
-          elif [[ $GITHUB_REF == refs/heads/* ]]; then
-            # Other git branches are tagged with the branch name.
-            VERSION=${GITHUB_REF#refs/heads/}
-            # Basic sanitization (replace / with -)
-            VERSION=${VERSION//\//-}
-            TAGS="${{ env.DOCKER_IMAGE_NAME }}:${VERSION}"
-
-          elif [[ $GITHUB_REF == refs/pull/* ]]; then
-            # Pull requests are tagged with pr-<PR#>.
-            VERSION=pr-${{ github.event.number }}
-            TAGS="${{ env.DOCKER_IMAGE_NAME }}:${VERSION}"
-          fi
-
-          echo "tags=${TAGS}" >> $GITHUB_OUTPUT
 
       - name: Push to Dockerhub
         if: github.event_name != 'pull_request'

@@ -96,3 +96,17 @@ VOLUME ["/data"]
 # 5900: VNC (We do not expose this by default in documentation, but it's open in
 #       the container)
 EXPOSE 5800
+
+# Metadata.
+ARG LABEL_VERSION=unknown
+LABEL \
+    org.label-schema.name="GnuCash" \
+    org.label-schema.description="Docker container for GnuCash" \
+    org.label-schema.version="${LABEL_VERSION}" \
+    org.label-schema.vcs-url="https://github.com/ArturKlauser/docker-gnucash" \
+    org.label-schema.schema-version="1.0" \
+    org.opencontainers.image.name="GnuCash" \
+    org.opencontainers.image.description="Docker container for GnuCash" \
+    org.opencontainers.image.version="${LABEL_VERSION}" \
+    org.opencontainers.image.url="https://github.com/ArturKlauser/docker-gnucash" \
+    org.opencontainers.image.source="https://github.com/ArturKlauser/docker-gnucash"
