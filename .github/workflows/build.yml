@@ -57,6 +57,8 @@ jobs:
 
       - name: Prepare cache tags
         id: cache
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           # The cache image name must be lowercase.
           CACHE_IMAGE_NAME="ghcr.io/${{ github.repository }}/build-cache"
@@ -71,7 +73,8 @@ jobs:
             # but only write to the PR's cache.
             REF_NAME="${{ github.head_ref }}"
             CLEAN_REF=$(sanitize "$REF_NAME")
-            CACHE_FROM="type=registry,ref=${CACHE_IMAGE_NAME}:main,ref=${CACHE_IMAGE_NAME}:${CLEAN_REF}"
+            CACHE_FROM="type=registry,ref=${CACHE_IMAGE_NAME}:${CLEAN_REF}
+            type=registry,ref=${CACHE_IMAGE_NAME}:main"
             CACHE_TO="type=registry,ref=${CACHE_IMAGE_NAME}:${CLEAN_REF},mode=max"
 
           elif [[ $GITHUB_REF == 'refs/heads/main' ]]; then
@@ -79,11 +82,22 @@ jobs:
             CACHE_FROM="type=registry,ref=${CACHE_IMAGE_NAME}:main"
             CACHE_TO="type=registry,ref=${CACHE_IMAGE_NAME}:main,mode=max"
 
+            # Try to identify if this push is the result of a PR merge and reuse that PR's cache.
+            # Using the GitHub CLI to find the PR associated with the commit.
+            PR_BRANCH=$(gh api "repos/${{ github.repository }}/commits/${{ github.sha }}/pulls" --jq '.[0].head.ref')
+            if [ -n "$PR_BRANCH" ] && [ "$PR_BRANCH" != "null" ]; then
+              echo "Found PR source branch: $PR_BRANCH"
+              CLEAN_REF=$(sanitize "$PR_BRANCH")
+              CACHE_FROM="type=registry,ref=${CACHE_IMAGE_NAME}:${CLEAN_REF}
+              ${CACHE_FROM}"
+            fi
+
           elif [[ $GITHUB_REF == refs/heads/* ]]; then
             # For other branches, read from main and branch cache, write to branch cache.
             REF_NAME=${GITHUB_REF#refs/heads/}
             CLEAN_REF=$(sanitize "$REF_NAME")
-            CACHE_FROM="type=registry,ref=${CACHE_IMAGE_NAME}:main,ref=${CACHE_IMAGE_NAME}:${CLEAN_REF}"
+            CACHE_FROM="type=registry,ref=${CACHE_IMAGE_NAME}:${CLEAN_REF}
+            type=registry,ref=${CACHE_IMAGE_NAME}:main"
             CACHE_TO="type=registry,ref=${CACHE_IMAGE_NAME}:${CLEAN_REF},mode=max"
 
           else
@@ -92,8 +106,17 @@ jobs:
             CACHE_TO="type=registry,ref=${CACHE_IMAGE_NAME}:main,mode=max"
           fi
 
-          echo "cache-from=${CACHE_FROM}" >> $GITHUB_OUTPUT
-          echo "cache-to=${CACHE_TO}" >> $GITHUB_OUTPUT
+          # Use HEREDOC syntax to preserve newline characters in cache-from/to strings.
+          {
+            echo "cache-from<<EOF"
+            echo "${CACHE_FROM}"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+          {
+            echo "cache-to<<EOF"
+            echo "${CACHE_TO}"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
 
       - name: Build and push to local registry
         uses: docker/build-push-action@v5
