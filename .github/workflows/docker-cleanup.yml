@@ -1,0 +1,68 @@
+name: Docker Hub Cleanup
+
+on:
+  schedule:
+    - cron: '0 0 * * 1'  # Every Monday at midnight
+  workflow_dispatch:      # Manual trigger
+
+jobs:
+  prune:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Cleanup Orphaned Images
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKER_PAT: ${{ secrets.DOCKERHUB_PAT }}
+          REPO: "${{ secrets.DOCKERHUB_USERNAME }}/gnucash"
+        run: |
+          set -e # Exit on error
+
+          echo "Logging in to Docker Hub..."
+          TOKEN=$(curl -s -H "Content-Type: application/json" -X POST \
+            -d "{\"username\": \"$DOCKER_USERNAME\", \"password\": \"$DOCKER_PAT\"}" \
+            https://hub.docker.com/v2/users/login/ | jq -r .token)
+
+          if [ -z "$TOKEN" ] || [ "$TOKEN" == "null" ]; then
+            echo "::error::Failed to get Docker Hub token."
+            exit 1
+          fi
+
+          echo "Fetching all image manifests for repository: $REPO"
+          # Loop through all pages of the API response
+          NEXT_URL="https://hub.docker.com/v2/repositories/$REPO/tags/?page_size=100"
+          ALL_RESULTS="[]"
+          while [ -n "$NEXT_URL" ]; do
+            RESPONSE=$(curl -s -H "Authorization: JWT $TOKEN" "$NEXT_URL")
+            PAGE_RESULTS=$(echo "$RESPONSE" | jq '.results')
+            ALL_RESULTS=$(echo "$ALL_RESULTS" | jq --argjson page "$PAGE_RESULTS" '. + $page')
+            NEXT_URL=$(echo "$RESPONSE" | jq -r '.next')
+          done
+
+          echo "Identifying orphaned manifests (untagged and inactive)..."
+          # An image is an orphan if it has no tags AND its status is "inactive".
+          # This correctly ignores untagged manifests that are part of a tagged multi-arch manifest (which have status "active").
+          ORPHANS=$(echo "$ALL_RESULTS" | jq -r '.[] | select(.name == null and .status == "inactive") | .digest')
+
+          if [ -z "$ORPHANS" ]; then
+            echo "No orphaned images found to delete."
+            exit 0
+          fi
+
+          echo "Found the following orphaned digests to delete:"
+          echo "$ORPHANS"
+
+          for DIGEST in $ORPHANS; do
+            echo "Deleting orphaned manifest: $DIGEST"
+            # Use the correct API endpoint for deleting manifests by digest
+            DELETE_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -X DELETE \
+              -H "Authorization: JWT $TOKEN" \
+              "https://hub.docker.com/v2/repositories/$REPO/manifests/$DIGEST")
+
+            if [ "$DELETE_STATUS" -ge 200 ] && [ "$DELETE_STATUS" -lt 300 ]; then
+              echo "Successfully deleted $DIGEST (HTTP status: $DELETE_STATUS)"
+            else
+              echo "::warning::Failed to delete $DIGEST (HTTP status: $DELETE_STATUS)"
+            fi
+          done
+
+          echo "Cleanup complete."
