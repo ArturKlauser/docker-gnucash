@@ -11,15 +11,16 @@ jobs:
     steps:
       - name: Cleanup Orphaned Images
         env:
-          DOCKER_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-          DOCKER_PAT: ${{ secrets.DOCKERHUB_PAT }}
-          REPO: "${{ secrets.DOCKERHUB_USERNAME }}/gnucash"
+          DOCKER_USERNAME: ${{ vars.DOCKERHUB_USERNAME }}
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+          REPO: "${{ vars.DOCKERHUB_USERNAME }}/gnucash"
+          DRY_RUN: false
         run: |
           set -e # Exit on error
 
           echo "Logging in to Docker Hub..."
           TOKEN=$(curl -s -H "Content-Type: application/json" -X POST \
-            -d "{\"username\": \"$DOCKER_USERNAME\", \"password\": \"$DOCKER_PAT\"}" \
+            -d "{\"username\": \"$DOCKER_USERNAME\", \"password\": \"$DOCKERHUB_TOKEN\"}" \
             https://hub.docker.com/v2/users/login/ | jq -r .token)
 
           if [ -z "$TOKEN" ] || [ "$TOKEN" == "null" ]; then
@@ -38,6 +39,10 @@ jobs:
             NEXT_URL=$(echo "$RESPONSE" | jq -r '.next')
           done
 
+          echo "--- ALL RESULTS (DEBUG) ---"
+          echo "$ALL_RESULTS" | jq .
+          echo "---------------------------"
+
           echo "Identifying orphaned manifests (untagged and inactive)..."
           # An image is an orphan if it has no tags AND its status is "inactive".
           # This correctly ignores untagged manifests that are part of a tagged multi-arch manifest (which have status "active").
@@ -52,16 +57,20 @@ jobs:
           echo "$ORPHANS"
 
           for DIGEST in $ORPHANS; do
-            echo "Deleting orphaned manifest: $DIGEST"
-            # Use the correct API endpoint for deleting manifests by digest
-            DELETE_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -X DELETE \
-              -H "Authorization: JWT $TOKEN" \
-              "https://hub.docker.com/v2/repositories/$REPO/manifests/$DIGEST")
-
-            if [ "$DELETE_STATUS" -ge 200 ] && [ "$DELETE_STATUS" -lt 300 ]; then
-              echo "Successfully deleted $DIGEST (HTTP status: $DELETE_STATUS)"
+            if [ "${DRY_RUN}" = "true" ]; then
+              echo "DRY RUN: Would delete orphaned manifest: $DIGEST"
             else
-              echo "::warning::Failed to delete $DIGEST (HTTP status: $DELETE_STATUS)"
+              echo "Deleting orphaned manifest: $DIGEST"
+              # Use the correct API endpoint for deleting manifests by digest
+              DELETE_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -X DELETE \
+                -H "Authorization: JWT $TOKEN" \
+                "https://hub.docker.com/v2/repositories/$REPO/manifests/$DIGEST")
+
+              if [ "$DELETE_STATUS" -ge 200 ] && [ "$DELETE_STATUS" -lt 300 ]; then
+                echo "Successfully deleted $DIGEST (HTTP status: $DELETE_STATUS)"
+              else
+                echo "::warning::Failed to delete $DIGEST (HTTP status: $DELETE_STATUS)"
+              fi
             fi
           done
 
