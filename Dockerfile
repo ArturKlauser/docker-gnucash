@@ -74,17 +74,16 @@ COPY startapp.sh /startapp.sh
 # Copy the rootfs directory.
 COPY rootfs/ /
 
-# Conditionally install the Yelp configuration.
-RUN if [ "${WITH_DOCS}" = "true" ]; then \
+RUN \
+    # Conditionally install the Yelp configuration.
+    if [ "${WITH_DOCS}" = "true" ]; then \
         cp -r /opt/with-docs/* /; \
     fi && \
-    rm -rf /opt/with-docs
-
-# Set the name of the application.
-RUN set-cont-env APP_NAME "GnuCash"
-
-# Install the application icon.
-RUN install_app_icon.sh \
+    rm -rf /opt/with-docs && \
+    # Set the name of the application.
+    set-cont-env APP_NAME "GnuCash" && \
+    # Install the application icon.
+    install_app_icon.sh \
     "https://upload.wikimedia.org/wikipedia/commons/thumb/1/18/GnuCash_logo.svg/500px-GnuCash_logo.svg.png"
 
 # Define mountable directories.
@@ -109,4 +108,6 @@ LABEL \
     org.opencontainers.image.description="Docker container for GnuCash" \
     org.opencontainers.image.version="${LABEL_VERSION}" \
     org.opencontainers.image.url="https://github.com/ArturKlauser/docker-gnucash" \
-    org.opencontainers.image.source="https://github.com/ArturKlauser/docker-gnucash"
+    org.opencontainers.image.source="https://github.com/ArturKlauser/docker-gnucash" \
+    # Reset labels inherited from the base image that don't make sense.
+    org.opencontainers.image.ref.name=""
