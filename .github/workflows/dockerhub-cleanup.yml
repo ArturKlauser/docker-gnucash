@@ -5,32 +5,38 @@ on:
     - cron: '0 0 * * 1'  # Every Monday at midnight
   workflow_dispatch:      # Manual trigger
 
+concurrency:
+  # Cancel unfinished cleanup runs if a new run starts.
+  group: clean-dockerhub
+  cancel-in-progress: true
+
 jobs:
   prune:
     runs-on: ubuntu-latest
     steps:
       - name: Cleanup Orphaned Images
         env:
-          DOCKER_USERNAME: ${{ vars.DOCKERHUB_USERNAME }}
+          DOCKERHUB_USERNAME: ${{ vars.DOCKERHUB_USERNAME }}
           DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
-          REPO: "${{ vars.DOCKERHUB_USERNAME }}/gnucash"
+          REPO: "gnucash"
           DRY_RUN: false
         run: |
           set -e # Exit on error
 
+          REPO_FULL="${DOCKERHUB_USERNAME}/${REPO}"
           echo "Logging in to Docker Hub..."
           ACCESS_TOKEN=$(curl -s -H "Content-Type: application/json" -X POST \
-            -d "{\"username\": \"$DOCKER_USERNAME\", \"password\": \"$DOCKERHUB_TOKEN\"}" \
-            https://hub.docker.com/v2/users/login/ | jq -r .token)
+            -d "{\"identifier\": \"$DOCKERHUB_USERNAME\", \"secret\": \"$DOCKERHUB_TOKEN\"}" \
+            https://hub.docker.com/v2/auth/token/ | jq -r .access_token)
 
           if [ -z "$ACCESS_TOKEN" ] || [ "$ACCESS_TOKEN" == "null" ]; then
             echo "::error::Failed to get Docker Hub access token."
             exit 1
           fi
 
-          echo "Fetching all image manifests for repository: $REPO"
+          echo "Fetching all image manifests for repository: $DOCKERHUB_USERNAME/$REPO"
           # Loop through all pages of the API response
-          NEXT_URL="https://hub.docker.com/v2/repositories/$REPO/tags/?page_size=100&include_inactive=true"
+          NEXT_URL="https://hub.docker.com/v2/namespaces/$DOCKERHUB_USERNAME/repositories/$REPO/tags?page_size=100"
           ALL_RESULTS="[]"
           while [ -n "$NEXT_URL" -a "$NEXT_URL" != 'null' ]; do
             RESPONSE=$(curl -s -H "Authorization: JWT $ACCESS_TOKEN" "$NEXT_URL")
@@ -46,7 +52,7 @@ jobs:
           echo "Identifying orphaned manifests (untagged and inactive)..."
           # An image is an orphan if it has no tags AND its status is "inactive".
           # This correctly ignores untagged manifests that are part of a tagged multi-arch manifest (which have status "active").
-          ORPHANS=$(echo "$ALL_RESULTS" | jq -r '.[] | select(.name == null and .status == "inactive") | .digest')
+          ORPHANS=$(echo "$ALL_RESULTS" | jq -r '.[] | select(.name == null and .tag_status == "inactive") | .digest')
 
           if [ -z "$ORPHANS" ]; then
             echo "No orphaned images found to delete."
@@ -64,7 +70,7 @@ jobs:
               # Use the correct API endpoint for deleting manifests by digest
               DELETE_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -X DELETE \
                 -H "Authorization: JWT $ACCESS_TOKEN" \
-                "https://hub.docker.com/v2/repositories/$REPO/manifests/$DIGEST")
+                "https://hub.docker.com/v2/repositories/$REPO_FULL/manifests/$DIGEST")
 
               if [ "$DELETE_STATUS" -ge 200 ] && [ "$DELETE_STATUS" -lt 300 ]; then
                 echo "Successfully deleted $DIGEST (HTTP status: $DELETE_STATUS)"
