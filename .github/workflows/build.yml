@@ -120,6 +120,19 @@ jobs:
             CACHE_TO="type=registry,ref=${CACHE_IMAGE_NAME}:main,mode=max"
           fi
 
+          echo "::group::Prepare cache tags"
+          echo "CACHE_IMAGE_NAME=${CACHE_IMAGE_NAME}"
+          echo "REF_NAME=${REF_NAME}"
+          echo "CLEAN_REF=${CLEAN_REF}"
+          echo "PR_BRANCH=${PR_BRANCH}"
+          echo "CACHE_FROM<<EOF"
+          echo "${CACHE_FROM}"
+          echo "EOF"
+          echo "CACHE_TO<<EOF"
+          echo "${CACHE_TO}"
+          echo "EOF"
+          echo "::endgroup::"
+
           # Use HEREDOC syntax to preserve newline characters in cache-from/to
           # strings.
           {
@@ -181,6 +194,12 @@ jobs:
           else
              LABEL_VERSION=$VERSION
           fi
+
+          echo "::group::Prepare image metadata"
+          echo "VERSION=${VERSION}"
+          echo "TAGS=${TAGS}"
+          echo "LABEL_VERSION=${LABEL_VERSION}"
+          echo "::endgroup::"
 
           echo "label_version=${LABEL_VERSION}" >> $GITHUB_OUTPUT
           echo "tags=${TAGS}" >> $GITHUB_OUTPUT
