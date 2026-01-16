@@ -21,12 +21,18 @@ load utils
   [ "$status" -eq 0 ]
 }
 
-@test "Checking that GnuCash guide contains XML files..." {
+@test "Checking that GnuCash guide contains XML/docbook files..." {
   # *.xml needs to be quoted to prevent host shell from expanding it.
-  run exec_in_container sh -c 'ls /usr/share/help/C/gnucash-guide/*.xml'
-  echo "exit status: $status (ls /usr/share/help/C/gnucash-guide/*.xml)"
+  run exec_in_container sh -c \
+    'ls -1 /usr/share/help/C/gnucash-guide/ | grep -Ec "\.(xml|docbook)$"'
+  echo "exit status: $status" \
+    '(ls -1 /usr/share/help/C/gnucash-guide/ | grep -Ec "\.(xml|docbook)$"'
   [ "$status" -eq 0 ]
+  # Currently there are 26 files - expect some variation with versions.
+  echo "output: ${output}"
+  [ "${lines[0]}" -ge '20' ]
 }
+
 @test "Checking that GnuCash manual directory exists..." {
   run exec_in_container test -d /usr/share/help/C/gnucash-manual
   echo "exit status: $status (test -d /usr/share/help/C/gnucash-manual)"
@@ -40,9 +46,14 @@ load utils
   [ "$status" -eq 0 ]
 }
 
-@test "Checking that GnuCash manual contains XML files..." {
+@test "Checking that GnuCash manual contains XML/docbook files..." {
   # *.xml needs to be quoted to prevent host shell from expanding it.
-  run exec_in_container sh -c 'ls /usr/share/help/C/gnucash-manual/*.xml'
-  echo "exit status: $status (ls /usr/share/help/C/gnucash-manual/*.xml)"
+  run exec_in_container sh -c \
+    'ls -1 /usr/share/help/C/gnucash-manual/ | grep -Ec "\.(xml|docbook)$"'
+  echo "exit status: $status" \
+    '(ls -1 /usr/share/help/C/gnucash-manual/ | grep -Ec "\.(xml|docbook)$"'
   [ "$status" -eq 0 ]
+  # Currently there are 18 files - expect some variation with versions.
+  echo "output: ${output}"
+  [ "${lines[0]}" -ge '12' ]
 }

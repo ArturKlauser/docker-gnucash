@@ -7,6 +7,7 @@ ARG BASEIMAGE_VERSION=undefined
 ARG GNUCASH_VERSION=undefined
 # The following args can optionally be overridden on the command line.
 ARG WITH_DOCS=true
+ARG USE_GNUCASH_PPA=true
 
 # Pull base image.
 FROM jlesage/baseimage-gui:${BASEIMAGE_VERSION}
@@ -17,6 +18,7 @@ FROM jlesage/baseimage-gui:${BASEIMAGE_VERSION}
 ARG BASEIMAGE_VERSION
 ARG GNUCASH_VERSION
 ARG WITH_DOCS
+ARG USE_GNUCASH_PPA
 
 # Set the name of the application.
 ENV APP_NAME="GnuCash"
@@ -41,7 +43,14 @@ ENV LC_ALL=en_US.UTF-8
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         software-properties-common && \
-    add-apt-repository -y ppa:gnucash/ppa && \
+    if [ "${USE_GNUCASH_PPA}" = "true" ]; then \
+        # Use Gnucash from its PPA repo.
+        add-apt-repository -y ppa:gnucash/ppa; \
+    else \
+        # Use Gnucash from Ubuntu 25.10 (questing) repo.
+        # This increases the image size by ~90 MB vs. the PPA version.
+        add-apt-repository -y "deb http://archive.ubuntu.com/ubuntu/ questing main restricted universe multiverse"; \
+    fi && \
     apt-get update && \
     apt-get install -y --no-install-recommends \
         locales && \
