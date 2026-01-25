@@ -179,21 +179,25 @@ docker run -d \
 > *   `/config/certs/web-privkey.pem`: The private key.
 >
 > For example, if you are using Let's Encrypt, you would copy your
-> `fullchain.pem` and `privkey.pem` to these locations.
->
-> **Note:** Let's Encrypt certificates are valid only for real domain names, not
-> for `localhost` or IP addresses. To avoid browser warnings, you must access
-> the container using the domain name specified in the certificate (e.g., via a
-> reverse proxy).
+> `fullchain.cer` and `mydomain.com.key` to these locations.
 >
 > 1.  Stop the container.
 > 2.  Copy and rename your certificate files to the `certs` subdirectory of your
 >     mapped config directory (e.g., `./config/certs`):
 >     ```bash
->     cp /path/to/your/fullchain.pem ./config/certs/web-fullchain.pem
->     cp /path/to/your/privkey.pem ./config/certs/web-privkey.pem
+>     cp /path/to/your/fullchain.cer ./config/certs/web-fullchain.pem
+>     cp /path/to/your/mydomain.com.key ./config/certs/web-privkey.pem
 >     ```
 > 3.  Start the container.
+>
+> **Note:** Let's Encrypt certificates are valid only for real domain names, not
+> for `localhost` or IP addresses. To avoid browser warnings, you must access
+> the container using the domain name specified in the certificate, not via
+> `https://localhost:5800`. If you access the container via a reverse proxy,
+> you need to install a valid front-end certificate (which the browser checks)
+> in the reverse proxy itself. Depending on the configuration of the reverse
+> proxy, e.g., `proxy_ssl_verify` for nginx, it might or might not care if the
+> backend (container) certificate is self-signed.
 > </details>
 
 ## Local Image Build
