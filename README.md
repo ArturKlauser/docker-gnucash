@@ -165,6 +165,37 @@ docker run -d \
 >       UI's "GnuCash -> Settings" menu.
 > </details>
 
+> [!TIP]
+> <details>
+> <summary>How to use an existing SSL certificate (e.g., from Let's Encrypt).</summary>
+>
+> By default, the container generates a self-signed certificate, which typically
+> causes web browsers to issue a warning. To use a trusted certificate, such as
+> one from [Let's Encrypt](https://letsencrypt.org/), you need to place your
+> certificate files in the `/config/certs` directory.
+>
+> The container expects the following files:
+> *   `/config/certs/web-fullchain.pem`: The full chain certificate.
+> *   `/config/certs/web-privkey.pem`: The private key.
+>
+> For example, if you are using Let's Encrypt, you would copy your
+> `fullchain.pem` and `privkey.pem` to these locations.
+>
+> **Note:** Let's Encrypt certificates are valid only for real domain names, not
+> for `localhost` or IP addresses. To avoid browser warnings, you must access
+> the container using the domain name specified in the certificate (e.g., via a
+> reverse proxy).
+>
+> 1.  Stop the container.
+> 2.  Copy and rename your certificate files to the `certs` subdirectory of your
+>     mapped config directory (e.g., `./config/certs`):
+>     ```bash
+>     cp /path/to/your/fullchain.pem ./config/certs/web-fullchain.pem
+>     cp /path/to/your/privkey.pem ./config/certs/web-privkey.pem
+>     ```
+> 3.  Start the container.
+> </details>
+
 ## Local Image Build
 
 To build the image locally:
