@@ -102,8 +102,68 @@ docker run -d \
 
 | Volume | Description |
 | :--- | :--- |
-| `/config` | Stores application configuration, including generated SSL certificates (in `/config/certs`). |
 | `/data` | Stores GnuCash data files. |
+| `/config` | Stores application configuration, including generated SSL certificates (in `/config/certs`). |
+
+> [!TIP]
+> <details>
+> <summary>How to copy existing GnuCash data and config from host machine to container.</summary>
+>
+> If you want to continue working with GnuCash data that you were using on your
+> host, there are several files you need to copy to the container volumes:
+> * **data**: Every "book", i.e., set of accounts, stores its main data in a
+>   `*.gnucash` file. This is the file that you explicitly "open" in the GnuCash
+>   app. Copy that file into the container's `/data` directory.
+>   * Alternatively, you can have stored the book data in a
+>     sqlite/mysql/postgres database. In that case, you can export it on the
+>     host system ("File -> Save As") as `*.gnucash` file for import into the
+>     container.
+> * **config**: The `*.gnucash` file above contains the main "book" data, such as
+>   accounts names and their transactions. Additional information, however, like
+>   UI settings or saved reports, is stored in separate configuration files.
+>   Those should be copied to the container's `/config` directory. Depending on
+>   the type of host system, you'll find those files in different locations:
+>   * Linux host:
+>     * Configuration location: `$XDG_DATA_HOME/gnucash`. You'll find
+>       directories `books`, `checks`, `translog`, and file `accelerator-map`.
+>       In `books` there will be a `*.gcm` file for each data file, e.g., for a
+>       `.../foobar.gnucash` data file there is a corresponding
+>       `.../books/foobar.gnucash.gcm` file. If the environment variable
+>       `$XDG_DATA_HOME` is not defined on your host, it usually defaults to
+>       `~/.local/share`. Copy the whole `$XDG_DATA_HOME/gnucash` directory to
+>       the container's `/config/xdg/data/gnucash` directory.
+>     * More settings: `$XDG_CONFIG_HOME/dconf/user`. This is a `dconf` database
+>       file that contains settings like window geometries, autosave settings,
+>       tip-of-the-day settings, Alphavantage API key, etc. If the environment
+>       variable `$XDG_CONFIG_HOME` is not defined on your host, it usually
+>       defaults to `~/.config`.  Copy this file to the container's
+>       `/config/xdg/config/dconf/user` file.
+>
+>       If you want to see what's in the file, you can decode it with `dconf
+>       dump /org/gnucash/` for all GnuCash related settings, or `dconf read
+>       /org/gnucash/GnuCash/dialogs/tip-of-the-day/show-at-startup` to get a
+>       specific value. Note that `dconf` is not installed in the
+>       `docker-gnucash` image.
+>
+>   * MacOS host:
+>     * Configuration location: Open the GnuCash app and select "Gnucash -> About
+>       Gnucash". The info box that pops up shows `GNC_USERDATA_DIR` and
+>       `GNC_USERCONFIG_DIR`. Typically both point to `~/Library/Application
+>       Support/GnuCash`.
+>
+>       In there, you'll find directories `books`, `checks`, and `config`, file
+>       `accelerator-map`, and `saved-reports*` if you have any. In `books`
+>       there will be a `*.gcm` file for each data file. Copy this whole
+>       `GNC_USERDATA_DIR` directory to the container's
+>       `/config/xdg/data/gnucash` directory.
+>     * More settings: `~/Library/Preferences/org.gnucash.GnuCash.plist`. This
+>       file contains settings similar to `$XDG_CONFIG_HOME/dconf/user` on
+>       Linux.  Unfortunately there is no easy way to import them automatically
+>       to the Linux GnuCash container. But you can look at them with `defaults
+>       read org.gnucash.GnuCash` to find out which settings you have changed
+>       and change the corresponding settings manually in the GnuCash container
+>       UI's "GnuCash -> Settings" menu.
+> </details>
 
 ## Local Image Build
 
