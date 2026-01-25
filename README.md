@@ -181,15 +181,19 @@ docker run -d \
 > For example, if you are using Let's Encrypt, you would copy your
 > `fullchain.pem` and `privkey.pem` to these locations.
 >
+> **Note:** Let's Encrypt certificates are valid only for real domain names, not
+> for `localhost` or IP addresses. To avoid browser warnings, you must access
+> the container using the domain name specified in the certificate (e.g., via a
+> reverse proxy).
+>
 > 1.  Stop the container.
-> 2.  Copy your certificate files to the `certs` subdirectory of your mapped
->     config directory (e.g., `./config/certs`).
-> 3.  Rename them to match the expected filenames:
+> 2.  Copy and rename your certificate files to the `certs` subdirectory of your
+>     mapped config directory (e.g., `./config/certs`):
 >     ```bash
 >     cp /path/to/your/fullchain.pem ./config/certs/web-fullchain.pem
 >     cp /path/to/your/privkey.pem ./config/certs/web-privkey.pem
 >     ```
-> 4.  Start the container.
+> 3.  Start the container.
 > </details>
 
 ## Local Image Build
