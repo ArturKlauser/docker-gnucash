@@ -4,18 +4,19 @@ force_error() {
 }
 
 setup_common() {
-  [ -n "$DOCKER_IMAGE" ] \
+  [[ -n "${DOCKER_IMAGE}" ]] \
     || force_error 'DOCKER_IMAGE environment variable not defined'
 
   # Make sure the docker image exists.
-  docker inspect "$DOCKER_IMAGE" > /dev/null \
-    || force_error "DOCKER_IMAGE '$DOCKER_IMAGE' does not exist"
+  docker inspect "${DOCKER_IMAGE}" > /dev/null \
+    || force_error "DOCKER_IMAGE '${DOCKER_IMAGE}' does not exist"
 
   # Create workdir to store temporary stuff.
-  export TESTS_WORKDIR="$(mktemp -d)"
+  TESTS_WORKDIR="$(mktemp -d)"
+  export TESTS_WORKDIR
 }
 
 teardown_common() {
   # Remove temporary work directory.
-  rm -r "$TESTS_WORKDIR"
+  rm -r "${TESTS_WORKDIR}"
 }

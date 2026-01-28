@@ -1,0 +1,66 @@
+# See https://pre-commit.com for more information
+# See https://pre-commit.com/hooks.html for more hooks
+repos:
+- repo: meta
+  hooks:
+    # Check hooks apply to the repository.
+  - id: check-hooks-apply
+    # Check for useless excludes.
+  - id: check-useless-excludes
+
+- repo: https://github.com/pre-commit/pre-commit-hooks
+  rev: v6.0.0
+  hooks:
+  #-- Generic checks.
+    # Check for files that would conflict in case-insensitive filesystems.
+  - id: check-case-conflict
+    # Check for files that contain merge conflict strings.
+  - id: check-merge-conflict
+    # Checks for symlinks which do not point to anything.
+#  - id: check-symlinks
+    # Prevent giant files from being committed.
+  - id: check-added-large-files
+
+  #-- Content specific checks.
+    # Trims trailing whitespace.
+  - id: trailing-whitespace
+    args: [--markdown-linebreak-ext=md]
+    # Ensures that a file is either empty, or ends with one newline.
+  - id: end-of-file-fixer
+    # Replaces or checks mixed line ending.
+  - id: mixed-line-ending
+    args: [--fix=lf]
+    #  Detects the presence of private keys.
+  - id: detect-private-key
+    # Checks yaml files for parseable syntax.
+  - id: check-yaml
+
+- repo: local
+  hooks:
+    # Checks shell scripts.
+  - id: shellcheck
+    name: shellcheck
+    language: docker_image
+    entry: koalaman/shellcheck:v0.11.0
+    args: [-xa, --norc, --enable=all]
+    types: [shell]
+    # Autoformats shell scripts.
+  - id: shfmt
+    name: shfmt
+    language: docker_image
+    entry: mvdan/shfmt:v3.12.0-alpine
+    args: [-ln=auto, -i, '2', -bn, -ci, -sr, -w]
+    types: [shell]
+    # Checks Dockerfiles.
+  - id: hadolint
+    name: hadolint
+    language: docker_image
+    entry: hadolint/hadolint:v2.14.0-alpine
+    args: [hadolint]
+    types: [dockerfile]
+
+  # Checks github action YAML files.
+- repo: https://github.com/rhysd/actionlint
+  rev: v1.7.10
+  hooks:
+  - id: actionlint-docker

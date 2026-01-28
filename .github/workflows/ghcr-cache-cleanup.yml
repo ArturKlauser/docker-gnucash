@@ -18,7 +18,7 @@ jobs:
       packages: write
     steps:
       - name: Set repo name
-        run: echo "REPO_NAME=${GITHUB_REPOSITORY#*/}" >> $GITHUB_ENV
+        run: echo "REPO_NAME=${GITHUB_REPOSITORY#*/}" >> "$GITHUB_ENV"
 
       - name: Cleanup container images
         uses: dataaxiom/ghcr-cleanup-action@v1
