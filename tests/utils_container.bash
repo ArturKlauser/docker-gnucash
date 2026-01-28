@@ -1,12 +1,14 @@
 setup_container_daemon() {
-  export CONTAINER_DAEMON_NAME="$(mktemp -u dockertest-XXXXXXXXXX)"
+  CONTAINER_DAEMON_NAME="$(mktemp -u dockertest-XXXXXXXXXX)"
+  export CONTAINER_DAEMON_NAME
 
   # Make sure there is no existing instance.
-  docker kill "$CONTAINER_DAEMON_NAME" >/dev/null 2>&1 \
-    && docker rm "$CONTAINER_DAEMON_NAME" >/dev/null 2>&1 || true
+  docker kill "${CONTAINER_DAEMON_NAME}" > /dev/null 2>&1 \
+    && docker rm "${CONTAINER_DAEMON_NAME}" > /dev/null 2>&1 || true
 
   # Create a service for testing that runs after the 'app' service in order to
   # notify us that the 'app' has been started.
+  # shellcheck disable=SC2154
   APPREADY_SERVICE="${TESTS_WORKDIR}/service.d/appready"
   mkdir -p "${APPREADY_SERVICE}"
   export CONTAINER_COM_DIR='/appready-com'
@@ -63,32 +65,36 @@ EOF
   mkdir -p "${HOST_COM_DIR}"
 
   # Start the container in daemon mode.
+  USER_ID="$(id -u)"
+  GROUP_ID="$(id -g)"
+  # shellcheck disable=SC2154
   run docker run \
     -d \
-    --name "$CONTAINER_DAEMON_NAME" \
-    -e USER_ID="$(id -u)" \
-    -e GROUP_ID="$(id -g)" \
+    --name "${CONTAINER_DAEMON_NAME}" \
+    -e USER_ID="${USER_ID}" \
+    -e GROUP_ID="${GROUP_ID}" \
     -v "${APPREADY_SERVICE}:/etc/services.d/appready" \
     -v "${DEFAULT_SERVICE}/appready.dep:/etc/services.d/default/appready.dep" \
     -v "${HOST_COM_DIR}:${CONTAINER_COM_DIR}" \
     "${DOCKER_EXTRA_OPTS[@]}" \
     "${DOCKER_IMAGE}" \
     "${DOCKER_CMD[@]}" \
-    2>/dev/null
-  [[ "$status" -eq 0 ]] || force_error "docker command failure: $output"
+    2> /dev/null
+  # shellcheck disable=SC2154
+  [[ "${status}" -eq 0 ]] || force_error "docker command failure: ${output}"
 }
 
 teardown_container_daemon() {
-  [[ -n "$CONTAINER_DAEMON_NAME" ]]
+  [[ -n "${CONTAINER_DAEMON_NAME}" ]]
 
   echo "Stopping docker container..."
   # We kill instead of stop the container since in the test environment we
   # don't care about a clean container shutdown and prefer speedy test
   # execution.
-  docker kill "$CONTAINER_DAEMON_NAME"
+  docker kill "${CONTAINER_DAEMON_NAME}"
 
   echo "Removing docker container..."
-  docker rm "$CONTAINER_DAEMON_NAME"
+  docker rm "${CONTAINER_DAEMON_NAME}"
 
   # Clear the container ID.
   unset CONTAINER_DAEMON_NAME
@@ -96,25 +102,25 @@ teardown_container_daemon() {
 
 # Execute command in container.
 exec_in_container() {
-  [[ -n "$CONTAINER_DAEMON_NAME" ]]
-  docker exec "$CONTAINER_DAEMON_NAME" "$@"
+  [[ -n "${CONTAINER_DAEMON_NAME}" ]]
+  docker exec "${CONTAINER_DAEMON_NAME}" "$@"
 }
 
 getlog_container_daemon() {
-  [[ -n "$CONTAINER_DAEMON_NAME" ]]
-  docker logs -t "$CONTAINER_DAEMON_NAME"
+  [[ -n "${CONTAINER_DAEMON_NAME}" ]]
+  docker logs -t "${CONTAINER_DAEMON_NAME}"
 }
 
 wait_for_container_daemon() {
   echo "Waiting for the docker container daemon to be ready..."
   timeout=120
-  for countdown in $(eval echo {$timeout..0}); do
+  for countdown in $(eval "echo {${timeout}..0}"); do
     [[ -f ${HOST_COM_DIR}/appready ]] && break
-    (( timeout % 10 == 0 )) && echo "waiting ${countdown}..."
+    ((timeout % 10 == 0)) && echo "waiting ${countdown}..."
     sleep 1
   done
 
-  if  [[ ${countdown} -ne 0 ]]; then
+  if [[ ${countdown} -ne 0 ]]; then
     echo "Docker container ready."
   else
     echo "Docker container daemon wait timeout."
@@ -136,11 +142,13 @@ get_app_env_var() {
   # We must wait for the container to have started to see the app environment.
   wait_for_container_daemon
 
-  echo -n "appenv: "  # Help debugging on error.
-  cat "${HOST_COM_DIR}/appenv"  # Help debugging on error.
+  echo -n "appenv: "           # Help debugging on error.
+  cat "${HOST_COM_DIR}/appenv" # Help debugging on error.
   echo "searching app env for key: ${name}"
-  local value=$(grep "^${name}=" "${HOST_COM_DIR}/appenv" \
-                | sed -e "s/^${name}=//")
+  local value
+  # shellcheck disable=2312
+  value=$(grep "^${name}=" "${HOST_COM_DIR}/appenv" \
+    | sed -e "s/^${name}=//")
   echo "value: ${value}"
   run echo "${value}"
 }

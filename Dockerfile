@@ -40,6 +40,7 @@ ENV LC_ALL=en_US.UTF-8
 #         defaults config file separately in rootfs/etc/xdg/mimeapps.list
 #         that makes sure GnuCash can start it for displaying its help pages.
 
+# hadolint ignore=DL3008 # Pin versions in apt get install
 RUN <<EO_RUN
   set -ex
   apt-get update
