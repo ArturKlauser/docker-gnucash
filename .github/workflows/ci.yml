@@ -318,3 +318,29 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
           repository: ${{ env.DOCKER_IMAGE_NAME }}
           readme-filepath: DOCKERHUB.md
+
+  release:
+    name: Create GitHub Release
+    needs: build
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    permissions:
+      contents: write # Required for creating the release
+    steps:
+      - name: Check Tag Format
+        id: check
+        run: |
+          if [[ "${{ github.ref_name }}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "match=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Create Release
+        if: steps.check.outputs.match == 'true'
+        uses: softprops/action-gh-release@v2
+        with:
+          draft: true
+          generate_release_notes: true
+          body: |
+            Docker image: [${{ vars.DOCKERHUB_USERNAME }}/gnucash:${{ github.ref_name }}][1]
+
+            [1]: https://hub.docker.com/r/${{ vars.DOCKERHUB_USERNAME }}/gnucash/tags?name=${{ github.ref_name }}
