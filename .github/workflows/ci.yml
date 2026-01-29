@@ -40,6 +40,7 @@ jobs:
         uses: pre-commit/action@v3.0.1
 
   build:
+    name: Build and test docker image
     needs: run-pre-commits
     runs-on: ubuntu-latest
     permissions:
@@ -163,10 +164,12 @@ jobs:
       - name: Prepare image metadata
         id: meta
         run: |
+          PUSH_TO_DOCKERHUB=false
           # Determine the Docker container tags.
           TAGS=""
 
           if [[ $GITHUB_REF == refs/tags/* ]]; then
+            PUSH_TO_DOCKERHUB=true
             # Git tags are used 'as is' as docker image tags.
             VERSION=${GITHUB_REF#refs/tags/}
             TAGS="${{ env.DOCKER_IMAGE_NAME }}:${VERSION}"
@@ -182,13 +185,15 @@ jobs:
             fi
 
           elif [[ $GITHUB_REF == 'refs/heads/main' ]]; then
+            PUSH_TO_DOCKERHUB=true
             # Git main branch commits are tagged with docker's default 'latest'
             # tag.
             VERSION=latest
             TAGS="${{ env.DOCKER_IMAGE_NAME }}:${VERSION}"
-            TAGS="$TAGS,${{ env.DOCKER_IMAGE_NAME }}:"
-            TAGS="${TAGS}baseimage-gui-${{ env.BASEIMAGE_VERSION }}"
-            TAGS="${TAGS}-gnucash-${{ env.GNUCASH_VERSION }}"
+            #- Don't use this tag for now.
+            #-TAGS="$TAGS,${{ env.DOCKER_IMAGE_NAME }}:"
+            #-TAGS="${TAGS}baseimage-gui-${{ env.BASEIMAGE_VERSION }}"
+            #-TAGS="${TAGS}-gnucash-${{ env.GNUCASH_VERSION }}"
 
           elif [[ $GITHUB_REF == refs/heads/* ]]; then
             # Other git branches are tagged with the branch name.
@@ -210,13 +215,17 @@ jobs:
           fi
 
           echo "::group::Image metadata"
+          echo "PUSH_TO_DOCKERHUB=${PUSH_TO_DOCKERHUB}"
           echo "VERSION=${VERSION}"
           echo "TAGS=${TAGS}"
           echo "LABEL_VERSION=${LABEL_VERSION}"
           echo "::endgroup::"
 
-          echo "label_version=${LABEL_VERSION}" >> "$GITHUB_OUTPUT"
-          echo "tags=${TAGS}" >> "$GITHUB_OUTPUT"
+          {
+            echo "push_to_dockerhub=${PUSH_TO_DOCKERHUB}"
+            echo "label_version=${LABEL_VERSION}"
+            echo "tags=${TAGS}"
+          } >> "$GITHUB_OUTPUT"
 
       - name: Build and push to local registry
         uses: docker/build-push-action@v5
@@ -284,14 +293,14 @@ jobs:
           done
 
       - name: Login to Dockerhub
-        if: github.event_name != 'pull_request'
+        if: steps.meta.outputs.push_to_dockerhub == 'true'
         uses: docker/login-action@v3
         with:
           username: ${{ vars.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Push to Dockerhub
-        if: github.event_name != 'pull_request'
+        if: steps.meta.outputs.push_to_dockerhub == 'true'
         run: |
           # Split the comma-separated tags and format them as arguments
           IFS=',' read -ra TAG_ARRAY <<< "${{ steps.meta.outputs.tags }}"
