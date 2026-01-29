@@ -327,6 +327,9 @@ jobs:
     permissions:
       contents: write # Required for creating the release
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - name: Check Tag Format
         id: check
         run: |
@@ -338,6 +341,7 @@ jobs:
         if: steps.check.outputs.match == 'true'
         uses: softprops/action-gh-release@v2
         with:
+          files: README.md
           draft: true
           generate_release_notes: true
           body: |
