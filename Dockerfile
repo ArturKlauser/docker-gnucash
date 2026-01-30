@@ -11,18 +11,20 @@ ARG USE_GNUCASH_PPA=true
 
 # Pull base image.
 FROM jlesage/baseimage-gui:${BASEIMAGE_VERSION} AS icons-source
-RUN cp $(which install_app_icon.sh) /install_app_icon.sh
+RUN cp "$(which install_app_icon.sh)" /install_app_icon.sh
 
 # Generate icons.
 FROM alpine:3.21 AS icons-build
 COPY --from=icons-source /install_app_icon.sh /usr/local/bin/install_app_icon.sh
-RUN chmod +x /usr/local/bin/install_app_icon.sh
-RUN apk add --no-cache curl imagemagick sed
-RUN mkdir -p /opt/noVNC/app/images/icons && \
+# hadolint ignore=DL3018
+RUN \
+    chmod +x /usr/local/bin/install_app_icon.sh && \
+    apk add --no-cache curl imagemagick sed && \
+    mkdir -p /opt/noVNC/app/images/icons && \
     echo "<!-- BEGIN Favicons -->" > /opt/noVNC/index.html && \
-    echo "<!-- END Favicons -->" >> /opt/noVNC/index.html
-RUN install_app_icon.sh --no-tools-install "https://upload.wikimedia.org/wikipedia/commons/thumb/1/18/GnuCash_logo.svg/500px-GnuCash_logo.svg.png"
-RUN sed -n '/<!-- BEGIN Favicons -->/,/<!-- END Favicons -->/{ /<!-- BEGIN Favicons -->/d; /<!-- END Favicons -->/d; p; }' /opt/noVNC/index.html > /favicons_inner.html
+    echo "<!-- END Favicons -->" >> /opt/noVNC/index.html && \
+    install_app_icon.sh --no-tools-install "https://upload.wikimedia.org/wikipedia/commons/thumb/1/18/GnuCash_logo.svg/500px-GnuCash_logo.svg.png" && \
+    sed -n '/<!-- BEGIN Favicons -->/,/<!-- END Favicons -->/{ /<!-- BEGIN Favicons -->/d; /<!-- END Favicons -->/d; p; }' /opt/noVNC/index.html > /favicons_inner.html
 
 # Pull base image.
 FROM jlesage/baseimage-gui:${BASEIMAGE_VERSION}
