@@ -1,7 +1,7 @@
 services:
   gnucash:
     build: .
-    image: ${IMAGE:-arturklauser/gnucash:baseimage-gui-ubuntu-24.04-v4.10.6-gnucash-5.13}
+    image: ${IMAGE:-arturklauser/gnucash:v1.0.0}
     container_name: gnucash
     restart: unless-stopped
     ports:

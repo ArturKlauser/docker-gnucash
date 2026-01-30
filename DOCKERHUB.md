@@ -11,7 +11,7 @@ This image runs GnuCash with a web-based GUI, accessible via HTTPS.
     ```yaml
     services:
       gnucash:
-        image: arturklauser/gnucash:latest
+        image: arturklauser/gnucash:v1.0.0
         container_name: gnucash
         restart: unless-stopped
         ports:
@@ -57,7 +57,7 @@ docker run -d \
     -v ${DATA_DIR:-$(pwd)/data}:/data:rw \
     -e USER_ID=$(id -u) \
     -e GROUP_ID=$(id -g) \
-    arturklauser/gnucash:latest
+    arturklauser/gnucash:v1.0.0
 ```
 
 ## More Information
