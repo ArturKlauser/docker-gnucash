@@ -10,6 +10,21 @@ ARG WITH_DOCS=true
 ARG USE_GNUCASH_PPA=true
 
 # Pull base image.
+FROM jlesage/baseimage-gui:${BASEIMAGE_VERSION} AS icons-source
+RUN cp $(which install_app_icon.sh) /install_app_icon.sh
+
+# Generate icons.
+FROM alpine:3.21 AS icons-build
+COPY --from=icons-source /install_app_icon.sh /usr/local/bin/install_app_icon.sh
+RUN chmod +x /usr/local/bin/install_app_icon.sh
+RUN apk add --no-cache curl imagemagick sed
+RUN mkdir -p /opt/noVNC/app/images/icons && \
+    echo "<!-- BEGIN Favicons -->" > /opt/noVNC/index.html && \
+    echo "<!-- END Favicons -->" >> /opt/noVNC/index.html
+RUN install_app_icon.sh --no-tools-install "https://upload.wikimedia.org/wikipedia/commons/thumb/1/18/GnuCash_logo.svg/500px-GnuCash_logo.svg.png"
+RUN sed -n '/<!-- BEGIN Favicons -->/,/<!-- END Favicons -->/{ /<!-- BEGIN Favicons -->/d; /<!-- END Favicons -->/d; p; }' /opt/noVNC/index.html > /favicons_inner.html
+
+# Pull base image.
 FROM jlesage/baseimage-gui:${BASEIMAGE_VERSION}
 
 # Define working variables.
@@ -116,8 +131,16 @@ RUN <<EO_RUN
   rm -rf /opt/with-docs
   # Set the name of the application.
   set-cont-env APP_NAME "GnuCash"
-  # Install the application icon.
-  install_app_icon.sh "https://upload.wikimedia.org/wikipedia/commons/thumb/1/18/GnuCash_logo.svg/500px-GnuCash_logo.svg.png"
+EO_RUN
+
+# Install the application icon.
+COPY --from=icons-build /opt/noVNC/app/images/icons /opt/noVNC/app/images/icons
+COPY --from=icons-build /favicons_inner.html /tmp/favicons_inner.html
+RUN <<EO_RUN
+  set -ex
+  sed -i '/<!-- BEGIN Favicons -->/,/<!-- END Favicons -->/{ /<!-- BEGIN Favicons -->/b; /<!-- END Favicons -->/b; d; }' /opt/noVNC/index.html
+  sed -i '/<!-- BEGIN Favicons -->/r /tmp/favicons_inner.html' /opt/noVNC/index.html
+  rm /tmp/favicons_inner.html
 EO_RUN
 
 # Define mountable directories.
