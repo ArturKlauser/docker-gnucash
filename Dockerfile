@@ -18,17 +18,17 @@ FROM alpine:3.21 AS icons-build
 COPY --from=icons-source /install_app_icon.sh /usr/local/bin/install_app_icon.sh
 # hadolint ignore=DL3018
 RUN <<EO_RUN
-    set -ex
-    chmod +x /usr/local/bin/install_app_icon.sh
-    apk add --no-cache curl imagemagick sed
-    mkdir -p /opt/noVNC/app/images/icons
-    echo "<!-- BEGIN Favicons -->" > /opt/noVNC/index.html
-    echo "<!-- END Favicons -->" >> /opt/noVNC/index.html
-    install_app_icon.sh --no-tools-install \
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/1/18/GnuCash_logo.svg/500px-GnuCash_logo.svg.png"
-    # Extract the generated HTML content, excluding the markers.
-    grep -E -v '<!-- (BEGIN|END) Favicons -->' /opt/noVNC/index.html \
-        > /favicons_inner.html
+  set -ex
+  chmod +x /usr/local/bin/install_app_icon.sh
+  apk add --no-cache curl imagemagick sed
+  mkdir -p /opt/noVNC/app/images/icons
+  echo "<!-- BEGIN Favicons -->" > /opt/noVNC/index.html
+  echo "<!-- END Favicons -->" >> /opt/noVNC/index.html
+  install_app_icon.sh --no-tools-install \
+    "https://upload.wikimedia.org/wikipedia/commons/thumb/1/18/GnuCash_logo.svg/500px-GnuCash_logo.svg.png"
+  # Extract the generated HTML content, excluding the markers.
+  grep -E -v '<!-- (BEGIN|END) Favicons -->' /opt/noVNC/index.html \
+    > /opt/noVNC/app/images/icons/favicons_inner.html
 EO_RUN
 
 # Build main image.
@@ -142,17 +142,16 @@ EO_RUN
 
 # Install the application icon.
 COPY --from=icons-build /opt/noVNC/app/images/icons /opt/noVNC/app/images/icons
-COPY --from=icons-build /favicons_inner.html /tmp/favicons_inner.html
 RUN <<EO_RUN
   set -ex
   # Clear existing content between markers.
   sed -i \
-      '/<!-- BEGIN Favicons -->/,/<!-- END Favicons -->/{ /<!-- BEGIN Favicons -->/b; /<!-- END Favicons -->/b; d; }' \
-      /opt/noVNC/index.html
+    '/<!-- BEGIN Favicons -->/,/<!-- END Favicons -->/{ /<!-- BEGIN Favicons -->/b; /<!-- END Favicons -->/b; d; }' \
+    /opt/noVNC/index.html
   # Insert new content after the BEGIN marker.
-  sed -i '/<!-- BEGIN Favicons -->/r /tmp/favicons_inner.html' \
-      /opt/noVNC/index.html
-  rm /tmp/favicons_inner.html
+  sed -i '/<!-- BEGIN Favicons -->/r /opt/noVNC/app/images/icons/favicons_inner.html' \
+    /opt/noVNC/index.html
+  rm /opt/noVNC/app/images/icons/favicons_inner.html
 EO_RUN
 
 # Define mountable directories.
