@@ -1,10 +1,13 @@
 # <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/18/GnuCash_logo.svg/500px-GnuCash_logo.svg.png" width="64" align="absbottom" alt="GnuCash Logo"> Docker container for GnuCash
 
+[![Release][release-badge]][release-link]
 [![Build Status][build-badge]][build-link]
 [![Docker Image Size][size-badge]][size-link]
 
-[build-badge]: https://img.shields.io/github/actions/workflow/status/arturklauser/docker-gnucash/build.yml?branch=main&style=for-the-badge
-[build-link]: https://github.com/arturklauser/docker-gnucash/actions/workflows/build.yml
+[release-badge]: https://img.shields.io/github/v/release/arturklauser/docker-gnucash?logo=github&style=for-the-badge
+[release-link]: https://github.com/arturklauser/docker-gnucash/releases/latest
+[build-badge]: https://img.shields.io/github/actions/workflow/status/arturklauser/docker-gnucash/ci.yml?branch=main&style=for-the-badge
+[build-link]: https://github.com/arturklauser/docker-gnucash/actions/workflows/ci.yml
 [size-badge]: https://img.shields.io/docker/image-size/arturklauser/gnucash/latest?style=for-the-badge
 [size-link]: https://hub.docker.com/repository/docker/arturklauser/gnucash/
 
