@@ -9,24 +9,27 @@ ARG GNUCASH_VERSION=undefined
 ARG WITH_DOCS=true
 ARG USE_GNUCASH_PPA=true
 
-# Pull base image.
+# Pull base image for icon generator script.
 FROM jlesage/baseimage-gui:${BASEIMAGE_VERSION} AS icons-source
 RUN cp "$(which install_app_icon.sh)" /install_app_icon.sh
 
 # Generate icons.
 FROM alpine:3.21 AS icons-build
 COPY --from=icons-source /install_app_icon.sh /usr/local/bin/install_app_icon.sh
-# hadolint ignore=DL3018
-RUN \
-    chmod +x /usr/local/bin/install_app_icon.sh && \
-    apk add --no-cache curl imagemagick sed && \
-    mkdir -p /opt/noVNC/app/images/icons && \
-    echo "<!-- BEGIN Favicons -->" > /opt/noVNC/index.html && \
-    echo "<!-- END Favicons -->" >> /opt/noVNC/index.html && \
-    install_app_icon.sh --no-tools-install "https://upload.wikimedia.org/wikipedia/commons/thumb/1/18/GnuCash_logo.svg/500px-GnuCash_logo.svg.png" && \
-    sed -n '/<!-- BEGIN Favicons -->/,/<!-- END Favicons -->/{ /<!-- BEGIN Favicons -->/d; /<!-- END Favicons -->/d; p; }' /opt/noVNC/index.html > /favicons_inner.html
+RUN <<EO_RUN
+    set -ex
+    chmod +x /usr/local/bin/install_app_icon.sh
+    mkdir -p /opt/noVNC/app/images/icons
+    echo "<!-- BEGIN Favicons -->" > /opt/noVNC/index.html
+    echo "<!-- END Favicons -->" >> /opt/noVNC/index.html
+    install_app_icon.sh \
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/1/18/GnuCash_logo.svg/500px-GnuCash_logo.svg.png"
+    # Extract the generated HTML content, excluding the markers.
+    grep -E -v '<!-- (BEGIN|END) Favicons -->' /opt/noVNC/index.html \
+        > /favicons_inner.html
+EO_RUN
 
-# Pull base image.
+# Build main image.
 FROM jlesage/baseimage-gui:${BASEIMAGE_VERSION}
 
 # Define working variables.
@@ -140,8 +143,13 @@ COPY --from=icons-build /opt/noVNC/app/images/icons /opt/noVNC/app/images/icons
 COPY --from=icons-build /favicons_inner.html /tmp/favicons_inner.html
 RUN <<EO_RUN
   set -ex
-  sed -i '/<!-- BEGIN Favicons -->/,/<!-- END Favicons -->/{ /<!-- BEGIN Favicons -->/b; /<!-- END Favicons -->/b; d; }' /opt/noVNC/index.html
-  sed -i '/<!-- BEGIN Favicons -->/r /tmp/favicons_inner.html' /opt/noVNC/index.html
+  # Clear existing content between markers.
+  sed -i \
+      '/<!-- BEGIN Favicons -->/,/<!-- END Favicons -->/{ /<!-- BEGIN Favicons -->/b; /<!-- END Favicons -->/b; d; }' \
+      /opt/noVNC/index.html
+  # Insert new content after the BEGIN marker.
+  sed -i '/<!-- BEGIN Favicons -->/r /tmp/favicons_inner.html' \
+      /opt/noVNC/index.html
   rm /tmp/favicons_inner.html
 EO_RUN
 
