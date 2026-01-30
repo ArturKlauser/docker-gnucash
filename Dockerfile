@@ -16,13 +16,15 @@ RUN cp "$(which install_app_icon.sh)" /install_app_icon.sh
 # Generate icons.
 FROM alpine:3.21 AS icons-build
 COPY --from=icons-source /install_app_icon.sh /usr/local/bin/install_app_icon.sh
+# hadolint ignore=DL3018
 RUN <<EO_RUN
     set -ex
     chmod +x /usr/local/bin/install_app_icon.sh
+    apk add --no-cache curl imagemagick sed
     mkdir -p /opt/noVNC/app/images/icons
     echo "<!-- BEGIN Favicons -->" > /opt/noVNC/index.html
     echo "<!-- END Favicons -->" >> /opt/noVNC/index.html
-    install_app_icon.sh \
+    install_app_icon.sh --no-tools-install \
         "https://upload.wikimedia.org/wikipedia/commons/thumb/1/18/GnuCash_logo.svg/500px-GnuCash_logo.svg.png"
     # Extract the generated HTML content, excluding the markers.
     grep -E -v '<!-- (BEGIN|END) Favicons -->' /opt/noVNC/index.html \
