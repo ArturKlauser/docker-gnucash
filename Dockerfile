@@ -70,7 +70,24 @@ RUN <<EO_RUN
     fonts-dejavu \
     adwaita-icon-theme
   if [ "${WITH_DOCS}" = "true" ]; then
-    apt-get install -y --no-install-recommends gnucash-docs yelp
+    apt-get install -y --no-install-recommends yelp
+
+    # The newest version of gnucash-docs is only available in the newer
+    # Ubuntu 25.10 (questing) repo. Temporarily add it.
+    arch="$(uname -m)"
+    if [ "${arch}" = 'x86_64' ]; then
+      # amd64
+      repo='deb http://archive.ubuntu.com/ubuntu/'
+    else
+      # arm64
+      repo='deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports'
+    fi
+    repo="${repo} questing main restricted universe multiverse"
+    add-apt-repository -y "${repo}"
+    apt-get update
+    apt-get install -y --no-install-recommends gnucash-docs
+    add-apt-repository --remove -y "${repo}"
+    apt-get update
   fi
   apt-get remove -y software-properties-common
   apt-get autoremove -y
