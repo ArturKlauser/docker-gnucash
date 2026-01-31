@@ -125,9 +125,6 @@ EO_RUN
 #  apt-get install -y --no-install-recommends less strace xdg-utils
 #EORUN
 
-# Copy the start script.
-COPY startapp.sh /startapp.sh
-
 # Copy the rootfs directory.
 COPY rootfs/ /
 
