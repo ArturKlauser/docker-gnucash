@@ -22,6 +22,7 @@ RUN <<EO_RUN
   chmod +x /usr/local/bin/install_app_icon.sh
   apk add --no-cache curl imagemagick sed
   mkdir -p /opt/noVNC/app/images/icons
+  # Create a dummy index.html as the script expects to find the markers to inject content.
   echo "<!-- BEGIN Favicons -->" > /opt/noVNC/index.html
   echo "<!-- END Favicons -->" >> /opt/noVNC/index.html
   install_app_icon.sh --no-tools-install \
