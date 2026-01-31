@@ -148,7 +148,7 @@ RUN <<EO_RUN
   set -ex
   # Replace content between BEGIN and END markers.
   favicons_html='/opt/noVNC/app/images/icons/favicons_inner.html'
-  sed -in \
+  sed -i -n \
     -e "/<!-- BEGIN Favicons -->/ {p; r ${favicons_html}" \
     -e ':a; n; /<!-- END Favicons -->/ {p; b}; ba}; p' \
     /opt/noVNC/index.html
