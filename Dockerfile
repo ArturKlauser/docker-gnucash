@@ -77,7 +77,6 @@ RUN <<EO_RUN
     # This increases the image size by ~90 MB vs. the PPA version.
     add-apt-repository -y "deb http://archive.ubuntu.com/ubuntu/ questing main restricted universe multiverse"
   fi
-  apt-get update
   apt-get install -y --no-install-recommends locales
   locale-gen en_US.UTF-8
   # Enable installation of GnuCash documentation.
@@ -100,10 +99,8 @@ RUN <<EO_RUN
     # Ubuntu "resolute" (to be 26.04) repo. Temporarily add it.
     repo='deb http://archive.ubuntu.com/ubuntu/ resolute main universe'
     add-apt-repository -y "${repo}"
-    apt-get update
     apt-get install -y --no-install-recommends gnucash-docs
     add-apt-repository --remove -y "${repo}"
-    apt-get update
   fi
   apt-get remove -y software-properties-common
   apt-get autoremove -y
@@ -120,6 +117,9 @@ EO_RUN
 # Copy the rootfs directory.
 COPY rootfs/ /
 
+# Install the application icon (part 1).
+COPY --from=icons-build /opt/noVNC/app/images/icons /opt/noVNC/app/images/icons
+
 RUN <<EO_RUN
   set -ex
   # Conditionally install the Yelp configuration.
@@ -127,14 +127,8 @@ RUN <<EO_RUN
     cp -r /opt/with-docs/* /
   fi
   rm -rf /opt/with-docs
-  # Set the name of the application.
-  set-cont-env APP_NAME "GnuCash"
-EO_RUN
 
-# Install the application icon.
-COPY --from=icons-build /opt/noVNC/app/images/icons /opt/noVNC/app/images/icons
-RUN <<EO_RUN
-  set -ex
+  # Install the application icon (part 2).
   # Replace content between BEGIN and END markers.
   favicons_html='/opt/noVNC/app/images/icons/favicons_inner.html'
   sed -i -n \
