@@ -97,16 +97,8 @@ RUN <<EO_RUN
     apt-get install -y --no-install-recommends yelp
 
     # The newest version of gnucash-docs is only available in the newer
-    # Ubuntu 25.10 (questing) repo. Temporarily add it.
-    arch="$(uname -m)"
-    if [ "${arch}" = 'x86_64' ]; then
-      # amd64
-      repo='deb http://archive.ubuntu.com/ubuntu/'
-    else
-      # arm64
-      repo='deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports'
-    fi
-    repo="${repo} questing main restricted universe multiverse"
+    # Ubuntu "resolute" (to be 26.04) repo. Temporarily add it.
+    repo='deb http://archive.ubuntu.com/ubuntu/ resolute main universe'
     add-apt-repository -y "${repo}"
     apt-get update
     apt-get install -y --no-install-recommends gnucash-docs
