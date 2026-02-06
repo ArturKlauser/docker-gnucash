@@ -8,6 +8,7 @@ ARG GNUCASH_VERSION=undefined
 # The following args can optionally be overridden on the command line.
 ARG WITH_DOCS=true
 ARG USE_GNUCASH_PPA=true
+ARG LABEL_VERSION=unknown
 
 # Pull base image for icon generator script.
 FROM jlesage/baseimage-gui:${BASEIMAGE_VERSION} AS icons-source
@@ -43,9 +44,12 @@ ARG BASEIMAGE_VERSION
 ARG GNUCASH_VERSION
 ARG WITH_DOCS
 ARG USE_GNUCASH_PPA
+ARG LABEL_VERSION
 
 # Set the name of the application.
 ENV APP_NAME="GnuCash"
+ENV APP_VERSION=${GNUCASH_VERSION}
+ENV DOCKER_IMAGE_VERSION=${LABEL_VERSION}
 ENV SECURE_CONNECTION=1
 #ENV CONTAINER_DEBUG=1
 ENV LANG=en_US.UTF-8
@@ -149,7 +153,6 @@ VOLUME ["/data"]
 EXPOSE 5800
 
 # Metadata.
-ARG LABEL_VERSION=unknown
 LABEL \
   org.label-schema.name="GnuCash" \
   org.label-schema.description="Docker container for GnuCash" \
