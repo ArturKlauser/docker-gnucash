@@ -2,7 +2,7 @@
 # These args MUST be set on the "docker build" command line.
 # Example:
 #   docker build --build-arg BASEIMAGE_VERSION=ubuntu-24.04-v4.10.7 \
-#                --build-arg GNUCASH_VERSION=5.13 .
+#                --build-arg GNUCASH_VERSION=5.14 .
 ARG BASEIMAGE_VERSION=undefined
 ARG GNUCASH_VERSION=undefined
 # The following args can optionally be overridden on the command line.

@@ -41,20 +41,20 @@ load utils
 # to run 'gnucach --paths' in the environment context that the already started
 # gnucash process is operating in.
 
-@test "Checking Gnucash GNC_USERDATA_DIR points to /config..." {
+@test "Checking Gnucash GNC_DATA_HOME points to /config..." {
   run exec_in_container_app_env gnucash --display=:0 --paths
   echo "exit status: ${status} (gnucash --display=:0 --paths)"
   [[ "${status}" -eq 0 ]]
   echo "output: ${output}"
-  [[ "${output}" == *"GNC_USERDATA_DIR: /config/"* ]]
+  [[ "${output}" == *"GNC_DATA_HOME: /config/"* ]]
 }
 
-@test "Checking Gnucash GNC_USERCONFIG_DIR points to /config..." {
+@test "Checking Gnucash GNC_CONFIG_HOME points to /config..." {
   run exec_in_container_app_env gnucash --display=:0 --paths
   echo "exit status: ${status} (gnucash --display=:0 --paths)"
   [[ "${status}" -eq 0 ]]
   echo "output: ${output}"
-  [[ "${output}" == *"GNC_USERCONFIG_DIR: /config/"* ]]
+  [[ "${output}" == *"GNC_CONFIG_HOME: /config/"* ]]
 }
 
 @test "Checking that Gnucash runs automatically after container start..." {
