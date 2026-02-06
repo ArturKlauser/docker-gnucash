@@ -224,10 +224,10 @@ USER_ID=$(id -u) GROUP_ID=$(id -g) IMAGE=gnucash docker compose up -d
 | `BASEIMAGE_VERSION` | Version of `docker-baseimage-gui` to start with. | unset - must be set on command line |
 | `GNUCASH_VERSION` | Version of `gnucash` package to install. | unset - must be set on command line |
 | `WITH_DOCS` | Set to `false` to build the image without GnuCash documentation. | `true` |
-| `WITH_FQUOTE` | Set to `false` to build the image without Finance::Quote support. | `true` |
+| `WITH_FINANCE_QUOTE` | Set to `false` to build the image without Finance::Quote support. | `true` |
 
 Note, however, that at the time of writing (Jan 2026), this only saves ~90 MB
 (~8%) of docker image size. The majority of the image size of ~1.1 GB is the
 `gnucash` package itself and its dependencies. Also, on some Ubuntu versions,
 `gnucash` has a hard dependency on `libfinance-quote-perl`, so disabling
-`WITH_FQUOTE` might not actually remove the package.
+`WITH_FINANCE_QUOTE` might not actually remove the package.

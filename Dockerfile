@@ -7,7 +7,7 @@ ARG BASEIMAGE_VERSION=undefined
 ARG GNUCASH_VERSION=undefined
 # The following args can optionally be overridden on the command line.
 ARG WITH_DOCS=true
-ARG WITH_FQUOTE=true
+ARG WITH_FINANCE_QUOTE=true
 ARG USE_GNUCASH_PPA=true
 ARG LABEL_VERSION=unknown
 
@@ -44,7 +44,7 @@ FROM jlesage/baseimage-gui:${BASEIMAGE_VERSION} AS main-image-build
 ARG BASEIMAGE_VERSION
 ARG GNUCASH_VERSION
 ARG WITH_DOCS
-ARG WITH_FQUOTE
+ARG WITH_FINANCE_QUOTE
 ARG USE_GNUCASH_PPA
 ARG LABEL_VERSION
 
@@ -97,7 +97,7 @@ RUN <<EO_RUN
   # echo "path-include=/usr/share/doc/gnucash-docs*" \
   #   > /etc/dpkg/dpkg.cfg.d/z-gnucash-docs
   PACKAGES="gnucash=1:${GNUCASH_VERSION}* fonts-dejavu adwaita-icon-theme"
-  if [ "${WITH_FQUOTE}" = "true" ]; then
+  if [ "${WITH_FINANCE_QUOTE}" = "true" ]; then
     PACKAGES="${PACKAGES} libfinance-quote-perl"
   fi
   # hadolint ignore=DL3008 # Pin versions in apt-get install
