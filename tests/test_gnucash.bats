@@ -59,7 +59,7 @@ load utils
 
 @test "Checking that Gnucash runs automatically after container start..." {
   wait_for_container_daemon
-  run exec_in_container pgrep -P 1 gnucash
-  echo "exit status: ${status} (pgrep -P 1 gnucash)"
+  run exec_in_container pgrep -f 'gnucash --nofile'
+  echo "exit status: ${status} (pgrep -f 'gnucash --nofile')"
   [[ "${status}" -eq 0 ]]
 }
