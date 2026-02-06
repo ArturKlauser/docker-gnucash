@@ -100,7 +100,8 @@ RUN <<EO_RUN
   if [ "${WITH_FQUOTE}" = "true" ]; then
     PACKAGES="${PACKAGES} libfinance-quote-perl"
   fi
-  # hadolint ignore=DL3008,SC2086 # Pin versions in apt-get install, ignore word splitting for ${PACKAGES}
+  # hadolint ignore=DL3008 # Pin versions in apt-get install
+  # shellcheck disable=SC2086 # Ignore word splitting for ${PACKAGES}
   apt-get install -y --no-install-recommends ${PACKAGES}
   if [ "${WITH_DOCS}" = "true" ]; then
     apt-get install -y --no-install-recommends yelp
