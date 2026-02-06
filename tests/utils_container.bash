@@ -24,9 +24,7 @@ echo "waiting for gnucash pid" >> "\$log"
 for countdown in {10..0}; do
   # Only care about gnucash child process of PID 1 (init),
   # not other random gnucash invocations from parallel tests.
-  # Note: 5.14+ seems to have different process hierarchy, so we use -f to find
-  # the main process by command line.
-  gnucash_pid=\$(pgrep -f 'gnucash --nofile')
+  gnucash_pid=\$(pgrep -P 1 gnucash)
   echo "waiting \$countdown; pid=\$gnucash_pid" >> "\$log"
   [[ -n "\$gnucash_pid" ]] && break
   sleep 1
