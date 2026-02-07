@@ -1,8 +1,9 @@
 # Define build arguments.
 # These args MUST be set on the "docker build" command line.
 # Example:
-#   docker build --build-arg BASEIMAGE_VERSION=ubuntu-24.04-v4.10.7 \
-#                --build-arg GNUCASH_VERSION=5.14 .
+#   docker buildx build \
+#     --build-arg BASEIMAGE_VERSION=ubuntu-24.04-v4.10.7 \
+#     --build-arg GNUCASH_VERSION=5.14 .
 ARG BASEIMAGE_VERSION=undefined
 ARG GNUCASH_VERSION=undefined
 # The following args can optionally be overridden on the command line.
@@ -78,6 +79,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt/lists,sharing=locked \
     <<EO_RUN
   set -ex
+  # Delete the docker-clean configuration to ensure .deb files are persisted in the cache.
   rm -f /etc/apt/apt.conf.d/docker-clean
   apt-get update
   apt-get install -y --no-install-recommends software-properties-common
