@@ -26,7 +26,7 @@ else
   # shellcheck disable=SC2312
   tr '\0' '\n' < "/proc/${gnucash_pid}/environ" 2>&1 \
     | sed -e '/^$/d' \
-    > "${CONTAINER_COM_DIR}/appenv"
+      > "${CONTAINER_COM_DIR}/appenv"
 fi
 
 # Create a shell script that sets the environment like the app has it. Make
