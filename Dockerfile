@@ -47,17 +47,17 @@ ARG USE_GNUCASH_PPA
 ARG LABEL_VERSION
 
 # Set the name of the application.
-ENV APP_NAME="GnuCash"
-ENV APP_VERSION=${GNUCASH_VERSION}
-ENV DOCKER_IMAGE_VERSION=${LABEL_VERSION}
-ENV KEEP_APP_RUNNING=1
-ENV SECURE_CONNECTION=1
-# Disable external VNC access.
-ENV VNC_LISTENING_PORT=-1
-#ENV CONTAINER_DEBUG=1
-ENV LANG=en_US.UTF-8
-ENV LANGUAGE=en_US:en
-ENV LC_ALL=en_US.UTF-8
+ENV APP_NAME="GnuCash" \
+    APP_VERSION=${GNUCASH_VERSION} \
+    DOCKER_IMAGE_VERSION=${LABEL_VERSION} \
+    KEEP_APP_RUNNING=1 \
+    SECURE_CONNECTION=1 \
+    # Disable external VNC access.
+    VNC_LISTENING_PORT=-1 \
+    # CONTAINER_DEBUG=1 \
+    LANG=en_US.UTF-8 \
+    LANGUAGE=en_US:en \
+    LC_ALL=en_US.UTF-8
 
 # Install GnuCash.
 # We explicitly install the version matching the argument to ensure consistency.
