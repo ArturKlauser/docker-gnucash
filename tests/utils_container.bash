@@ -13,7 +13,7 @@ setup_container_daemon() {
   mkdir -p "${APPREADY_SERVICE}"
   export CONTAINER_COM_DIR='/appready-com'
   touch "${APPREADY_SERVICE}/app.dep"
-  sed -e "s|\\$\\$CONTAINER_COM_DIR\\$\\$|${CONTAINER_COM_DIR}|g" \
+  sed -e "s|@CONTAINER_COM_DIR@|${CONTAINER_COM_DIR}|g" \
     "tests/scripts/appready.sh" > "${APPREADY_SERVICE}/run"
   chmod 755 "${APPREADY_SERVICE}/run"
   # The 'appready' service is not started unless the 'default' service

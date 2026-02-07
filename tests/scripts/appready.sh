@@ -1,7 +1,6 @@
 #!/usr/bin/bash
 
-# shellcheck disable=SC2016
-CONTAINER_COM_DIR='$$CONTAINER_COM_DIR$$'
+CONTAINER_COM_DIR='@CONTAINER_COM_DIR@'
 log="${CONTAINER_COM_DIR}/log"
 
 : > "${log}" # Start appready debugging log.
