@@ -122,6 +122,11 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
   fi
   apt-get remove -y software-properties-common
   apt-get autoremove -y
+  # Remove the files installed by the locales package, but keep the generated
+  # locale data.
+  # We cannot remove the package itself (e.g. via 'apt-get remove locales')
+  # because gnucash depends on it.
+  rm -rf /usr/share/i18n /usr/sbin/locale-gen /usr/sbin/update-locale /usr/sbin/validlocale
 EO_RUN
 
 # Helpers for image debugging.
