@@ -111,8 +111,9 @@ get_app_env_var() {
   echo "searching app env for key: ${name}"
   local value
   # shellcheck disable=2312
-  value=$(grep "^${name}=" "${HOST_COM_DIR}/appenv" \
-    | sed -e "s/^${name}=//")
+  value=$(awk -F= -v key="${name}" \
+    '$1 == key { print substr($0, length($1)+2) }' \
+    "${HOST_COM_DIR}/appenv")
   echo "value: ${value}"
   run echo "${value}"
 }
