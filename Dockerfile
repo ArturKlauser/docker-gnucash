@@ -120,7 +120,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     apt-get install -y --no-install-recommends gnucash-docs
     add-apt-repository --remove -y "${repo}"
   fi
-  apt-get remove -y software-properties-common
+  apt-get remove -y software-properties-common locales
   apt-get autoremove -y
 EO_RUN
 
