@@ -1,5 +1,12 @@
 #!/usr/bin/bash
 
+# This script runs as a service after the 'app' service is started. It creates a
+# notifier file 'appready' once it has verified that the final 'app' process
+# (gnucash) has actually started. In addition, it creates a shell script
+# 'appenv.sh' which can be sourced to set the exact same environment variables
+# that the 'app' sees. They are grabbed from the '/proc/<app_pid>/environ'
+# exported by the running 'app'.
+
 CONTAINER_COM_DIR='@CONTAINER_COM_DIR@'
 log="${CONTAINER_COM_DIR}/log"
 

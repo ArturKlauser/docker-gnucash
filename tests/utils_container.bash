@@ -7,7 +7,8 @@ setup_container_daemon() {
     && docker rm "${CONTAINER_DAEMON_NAME}" > /dev/null 2>&1 || true
 
   # Create a service for testing that runs after the 'app' service in order to
-  # notify us that the 'app' has been started.
+  # notify us that the 'app' has been started. In addition, it exports the
+  # environment variables as the app sees them.
   # shellcheck disable=SC2154
   APPREADY_SERVICE="${TESTS_WORKDIR}/service.d/appready"
   mkdir -p "${APPREADY_SERVICE}"
