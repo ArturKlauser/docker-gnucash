@@ -7,51 +7,15 @@ setup_container_daemon() {
     && docker rm "${CONTAINER_DAEMON_NAME}" > /dev/null 2>&1 || true
 
   # Create a service for testing that runs after the 'app' service in order to
-  # notify us that the 'app' has been started.
+  # notify us that the 'app' has been started. In addition, it exports the
+  # environment variables as the app sees them.
   # shellcheck disable=SC2154
   APPREADY_SERVICE="${TESTS_WORKDIR}/service.d/appready"
   mkdir -p "${APPREADY_SERVICE}"
   export CONTAINER_COM_DIR='/appready-com'
   touch "${APPREADY_SERVICE}/app.dep"
-  cat << EOF > "${APPREADY_SERVICE}/run"
-#!/usr/bin/bash
-
-log='${CONTAINER_COM_DIR}/log'
-
-> "\$log"  # Start appready debugging log.
-echo "waiting for gnucash pid" >> "\$log"
-# Give app run script some time to exec the gnucash process.
-for countdown in {10..0}; do
-  # Only care about gnucash child process of PID 1 (init),
-  # not other random gnucash invocations from parallel tests.
-  gnucash_pid=\$(pgrep -P 1 gnucash)
-  echo "waiting \$countdown; pid=\$gnucash_pid" >> "\$log"
-  [[ -n "\$gnucash_pid" ]] && break
-  sleep 1
-done
-
-if  [[ \${countdown} -eq 0 ]]; then
-  echo "Docker gnucash app startup wait timeout." >> "\$log"
-  echo "Docker gnucash app startup wait timeout." \
-    > '${CONTAINER_COM_DIR}/appenv'
-else
-  ls -la "/proc" >> "\$log"
-  ls -la "/proc/\$gnucash_pid" >> "\$log"
-  # Capture the running app's environment, \n delimited.
-  cat "/proc/\$gnucash_pid/environ" 2>&1 \
-    | tr '\0' '\n' \
-    | sed -e '/^$/d' \
-    > '${CONTAINER_COM_DIR}/appenv'
-fi
-
-# Create a shell script that sets the environment like the app has it. Make
-# sure this correctly handles embedded white space by quoting env values.
-echo "env -i" > "${CONTAINER_COM_DIR}/appenv.sh"
-cat '${CONTAINER_COM_DIR}/appenv' \
-  | sed -e 's/^/export "/;s/$/"/' \
-  >> '${CONTAINER_COM_DIR}/appenv.sh'
-touch '${CONTAINER_COM_DIR}/appready'
-EOF
+  sed -e "s|@CONTAINER_COM_DIR@|${CONTAINER_COM_DIR}|g" \
+    "tests/scripts/appready.sh" > "${APPREADY_SERVICE}/run"
   chmod 755 "${APPREADY_SERVICE}/run"
   # The 'appready' service is not started unless the 'default' service
   # (transitively) depends on it, so we have to add that dependence too.
