@@ -18,10 +18,12 @@ RUN cp "$(which install_app_icon.sh)" /install_app_icon.sh
 FROM alpine:3.21 AS icons-build
 COPY --from=icons-source /install_app_icon.sh /usr/local/bin/install_app_icon.sh
 # hadolint ignore=DL3018 # Pin versions in apk add
-RUN <<EO_RUN
+RUN --mount=type=cache,target=/var/cache/apk <<EO_RUN
   set -ex
   chmod +x /usr/local/bin/install_app_icon.sh
-  apk add --no-cache curl imagemagick sed
+  rm -rf /etc/apk/cache
+  ln -sf /var/cache/apk /etc/apk/cache
+  apk add --update curl imagemagick sed
   mkdir -p /opt/noVNC/app/images/icons
   # Create a dummy index.html as the script expects to find the markers to
   # inject content.
@@ -72,8 +74,11 @@ ENV LC_ALL=en_US.UTF-8
 #         that makes sure GnuCash can start it for displaying its help pages.
 
 # hadolint ignore=DL3008 # Pin versions in apt-get install
-RUN <<EO_RUN
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt/lists,sharing=locked \
+    <<EO_RUN
   set -ex
+  rm -f /etc/apt/apt.conf.d/docker-clean
   apt-get update
   apt-get install -y --no-install-recommends software-properties-common
   if [ "${USE_GNUCASH_PPA}" = "true" ]; then
@@ -111,7 +116,6 @@ RUN <<EO_RUN
   fi
   apt-get remove -y software-properties-common
   apt-get autoremove -y
-  rm -rf /var/lib/apt/lists/*
 EO_RUN
 
 # Helpers for image debugging.

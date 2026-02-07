@@ -205,6 +205,11 @@ docker run -d \
 
 ## Local Image Build
 
+> [!NOTE]
+> Building this image requires Docker BuildKit. This is enabled by default in
+> Docker Desktop and modern Docker versions. If you are using an older
+> environment, you may need to set `DOCKER_BUILDKIT=1`.
+
 To build the image locally:
 ```bash
 docker build \
