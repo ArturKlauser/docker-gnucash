@@ -1,9 +1,0 @@
-# git and github files
-.git/
-.github/
-.gitignore
-# default location of mounted volumes
-config/
-data/
-# other files in repo not necessary for docker image build
-tests/
