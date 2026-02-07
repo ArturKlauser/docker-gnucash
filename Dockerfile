@@ -79,7 +79,8 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt/lists,sharing=locked \
     <<EO_RUN
   set -ex
-  # Delete the docker-clean configuration to ensure .deb files are persisted in the cache.
+  # Delete the docker-clean configuration to ensure .deb files are persisted in
+  # the cache.
   rm -f /etc/apt/apt.conf.d/docker-clean
   apt-get update
   apt-get install -y --no-install-recommends software-properties-common
