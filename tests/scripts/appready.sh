@@ -23,6 +23,7 @@ else
   ls -la "/proc" >> "${log}"
   ls -la "/proc/${gnucash_pid}" >> "${log}"
   # Capture the running app's environment, \n delimited.
+  # shellcheck disable=SC2312
   tr '\0' '\n' < "/proc/${gnucash_pid}/environ" 2>&1 \
     | sed -e '/^$/d' \
     > "${CONTAINER_COM_DIR}/appenv"
