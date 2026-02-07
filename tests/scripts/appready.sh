@@ -1,9 +1,10 @@
 #!/usr/bin/bash
 
-CONTAINER_COM_DIR='/appready-com'
+# shellcheck disable=SC2016
+CONTAINER_COM_DIR='$$CONTAINER_COM_DIR$$'
 log="${CONTAINER_COM_DIR}/log"
 
-: > "${log}"  # Start appready debugging log.
+: > "${log}" # Start appready debugging log.
 echo "waiting for gnucash pid" >> "${log}"
 # Give app run script some time to exec the gnucash process.
 for countdown in {10..0}; do
@@ -15,7 +16,7 @@ for countdown in {10..0}; do
   sleep 1
 done
 
-if  [[ ${countdown} -eq 0 ]]; then
+if [[ ${countdown} -eq 0 ]]; then
   echo "Docker gnucash app startup wait timeout." >> "${log}"
   echo "Docker gnucash app startup wait timeout." \
     > "${CONTAINER_COM_DIR}/appenv"
@@ -24,9 +25,9 @@ else
   ls -la "/proc/${gnucash_pid}" >> "${log}"
   # Capture the running app's environment, \n delimited.
   # shellcheck disable=SC2312
-  tr '\0' '\n' < "/proc/${gnucash_pid}/environ" 2>&1 |
-    sed -e '/^$/d' \
-      > "${CONTAINER_COM_DIR}/appenv"
+  tr '\0' '\n' < "/proc/${gnucash_pid}/environ" 2>&1 \
+    | sed -e '/^$/d' \
+    > "${CONTAINER_COM_DIR}/appenv"
 fi
 
 # Create a shell script that sets the environment like the app has it. Make
