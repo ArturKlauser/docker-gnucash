@@ -1,6 +1,6 @@
 services:
   gnucash:
-    build: .
+    build: docker
     image: ${IMAGE:-arturklauser/gnucash:v1.0.0}
     container_name: gnucash
     restart: unless-stopped

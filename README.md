@@ -215,7 +215,7 @@ To build the image locally:
 docker buildx build \
     --build-arg BASEIMAGE_VERSION=ubuntu-24.04-v4.10.7 \
     --build-arg GNUCASH_VERSION=5.14 \
-    -t gnucash .
+    -t gnucash docker
 ```
 
 To run the locally built image:
