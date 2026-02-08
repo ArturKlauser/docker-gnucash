@@ -23,7 +23,7 @@ load utils
     'ls -1 /usr/share/help/C/gnucash-guide/ | grep -Ec "\.(xml|docbook)$"'
   assert_success
   # Currently there are 26 files - expect some variation with versions.
-  [[ "${lines[0]}" -ge '20' ]]
+  assert [ "${lines[0]}" -ge '20' ]
 }
 
 @test "Checking that GnuCash manual directory exists..." {
@@ -42,5 +42,5 @@ load utils
     'ls -1 /usr/share/help/C/gnucash-manual/ | grep -Ec "\.(xml|docbook)$"'
   assert_success
   # Currently there are 18 files - expect some variation with versions.
-  [[ "${lines[0]}" -ge '12' ]]
+  assert [ "${lines[0]}" -ge '12' ]
 }
