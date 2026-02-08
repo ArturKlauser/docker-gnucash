@@ -13,5 +13,5 @@ load utils
 @test "Checking that yelp runs..." {
   run exec_in_container yelp -h
   assert_success
-  assert_output --partial "Usage:"
+  assert_line --index 0 --regexp "^Usage:.*"
 }
