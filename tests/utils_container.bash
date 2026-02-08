@@ -67,7 +67,7 @@ teardown_container_daemon() {
 # Execute command in container.
 exec_in_container() {
   [[ -n "${CONTAINER_DAEMON_NAME}" ]]
-  echo "exec_in_container: $*"
+  echo "exec_in_container: $*" >&3
   docker exec "${CONTAINER_DAEMON_NAME}" "$@"
 }
 
