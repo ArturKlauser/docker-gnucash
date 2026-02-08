@@ -24,8 +24,8 @@ load utils
 }
 
 @test "Checking that Gnucash runs..." {
-  # Modern Gnucash can't even print verion or help messages to the TTY if it
-  # can't pass it's GTK GUI startup. That only works if a display is set and
+  # Modern Gnucash can't even print version or help messages to the TTY if it
+  # can't pass its GTK GUI startup. That only works if a display is set and
   # an X-server is actually running there. So we have to wait for the whole
   # container to start up before we can test even the most basic gnucash
   # invocation.
@@ -38,7 +38,7 @@ load utils
 }
 
 # To get the GNC_* variables that the installed gnucash app is using, we need
-# to run 'gnucach --paths' in the environment context that the already started
+# to run 'gnucash --paths' in the environment context that the already started
 # gnucash process is operating in.
 
 @test "Checking Gnucash GNC_DATA_HOME points to /config..." {
