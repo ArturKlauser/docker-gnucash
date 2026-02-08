@@ -38,13 +38,13 @@ load utils
 @test "Checking Gnucash GNC_DATA_HOME points to /config..." {
   run exec_in_container_app_env gnucash --display=:0 --paths
   assert_success
-  assert_line --partial "GNC_DATA_HOME: /config/"
+  assert_line --regexp "^GNC_DATA_HOME: /config/"
 }
 
 @test "Checking Gnucash GNC_CONFIG_HOME points to /config..." {
   run exec_in_container_app_env gnucash --display=:0 --paths
   assert_success
-  assert_line --partial "GNC_CONFIG_HOME: /config/"
+  assert_line --regexp "^GNC_CONFIG_HOME: /config/"
 }
 
 @test "Checking that Gnucash runs automatically after container start..." {
