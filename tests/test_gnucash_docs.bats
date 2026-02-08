@@ -3,57 +3,44 @@
 load utils
 
 @test "Checking that GnuCash documentation is installed..." {
-  run exec_in_container test -d /usr/share/doc/gnucash-docs
-  echo "exit status: ${status} (test -d /usr/share/doc/gnucash-docs)"
-  [[ "${status}" -eq 0 ]]
+  exec_in_container test -d /usr/share/doc/gnucash-docs
+  assert_success
 }
 
 @test "Checking that GnuCash guide directory exists..." {
-  run exec_in_container test -d /usr/share/help/C/gnucash-guide
-  echo "exit status: ${status} (test -d /usr/share/help/C/gnucash-guide)"
-  [[ "${status}" -eq 0 ]]
+  exec_in_container test -d /usr/share/help/C/gnucash-guide
+  assert_success
 }
 
 @test "Checking that GnuCash guide index exists..." {
-  run exec_in_container test -f /usr/share/help/C/gnucash-guide/index.docbook
-  echo "exit status: ${status}" \
-    "(test -f /usr/share/help/C/gnucash-guide/index.docbook)"
-  [[ "${status}" -eq 0 ]]
+  exec_in_container test -f /usr/share/help/C/gnucash-guide/index.docbook
+  assert_success
 }
 
 @test "Checking that GnuCash guide contains XML/docbook files..." {
   # *.xml needs to be quoted to prevent host shell from expanding it.
-  run exec_in_container sh -c \
+  exec_in_container sh -c \
     'ls -1 /usr/share/help/C/gnucash-guide/ | grep -Ec "\.(xml|docbook)$"'
-  echo "exit status: ${status}" \
-    '(ls -1 /usr/share/help/C/gnucash-guide/ | grep -Ec "\.(xml|docbook)$")'
-  [[ "${status}" -eq 0 ]]
+  assert_success
   # Currently there are 26 files - expect some variation with versions.
-  echo "lines[0]: ${lines[0]}"
-  [[ "${lines[0]}" -ge '20' ]]
+  assert [ "${lines[0]}" -ge '20' ]
 }
 
 @test "Checking that GnuCash manual directory exists..." {
-  run exec_in_container test -d /usr/share/help/C/gnucash-manual
-  echo "exit status: ${status} (test -d /usr/share/help/C/gnucash-manual)"
-  [[ "${status}" -eq 0 ]]
+  exec_in_container test -d /usr/share/help/C/gnucash-manual
+  assert_success
 }
 
 @test "Checking that GnuCash manual index exists..." {
-  run exec_in_container test -f /usr/share/help/C/gnucash-manual/index.docbook
-  echo "exit status: ${status}" \
-    "(test -f /usr/share/help/C/gnucash-manual/index.docbook)"
-  [[ "${status}" -eq 0 ]]
+  exec_in_container test -f /usr/share/help/C/gnucash-manual/index.docbook
+  assert_success
 }
 
 @test "Checking that GnuCash manual contains XML/docbook files..." {
   # *.xml needs to be quoted to prevent host shell from expanding it.
-  run exec_in_container sh -c \
+  exec_in_container sh -c \
     'ls -1 /usr/share/help/C/gnucash-manual/ | grep -Ec "\.(xml|docbook)$"'
-  echo "exit status: ${status}" \
-    '(ls -1 /usr/share/help/C/gnucash-manual/ | grep -Ec "\.(xml|docbook)$")'
-  [[ "${status}" -eq 0 ]]
+  assert_success
   # Currently there are 18 files - expect some variation with versions.
-  echo "lines[0]: ${lines[0]}"
-  [[ "${lines[0]}" -ge '12' ]]
+  assert [ "${lines[0]}" -ge '12' ]
 }
