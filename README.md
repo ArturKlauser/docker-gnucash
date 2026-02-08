@@ -18,7 +18,7 @@ The graphical user interface (GUI) of the application can be accessed through a
 modern web browser, requiring no installation or configuration on the client
 side. Only secure access via HTTPS is supported.
 
-The docker image is based on
+The Docker image is based on
 [jlesage/docker-baseimage-gui](https://github.com/jlesage/docker-baseimage-gui).
 
 > [!NOTE]

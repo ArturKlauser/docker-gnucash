@@ -18,4 +18,4 @@ load utils
 
 # We intentionally don't test the actual quote retrieval. During time of test we
 # don't want to depend on remote servers which over the past have shown various
-# degrees of instability, authorization, and quota issue.
+# degrees of instability, authorization, and quota issues.

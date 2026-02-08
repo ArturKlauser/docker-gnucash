@@ -123,6 +123,6 @@ exec_in_container_app_env() {
   wait_for_container_daemon
 
   # This function is already called with run. We don't want to use nested
-  # 'run' to capture output overwriting $lines[@]. So we captue it by hand.
+  # 'run' to capture output overwriting $lines[@]. So we capture it by hand.
   exec_in_container sh -c ". ${CONTAINER_COM_DIR}/appenv.sh; $*"
 }
