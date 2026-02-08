@@ -3,12 +3,12 @@
 load utils
 
 @test "Checking that Finance::Quote Perl module is installed..." {
-  run exec_in_container perl -mFinance::Quote -e 1
+  exec_in_container perl -mFinance::Quote -e 1
   assert_success
 }
 
 @test "Checking that Gnucash integration with Finance::Quote works..." {
-  run exec_in_container gnucash-cli --quotes info
+  exec_in_container gnucash-cli --quotes info
   assert_success
   assert_output --regexp "Finance::Quote version [0-9]+\.[0-9]+"
 }

@@ -67,8 +67,8 @@ teardown_container_daemon() {
 # Execute command in container.
 exec_in_container() {
   [[ -n "${CONTAINER_DAEMON_NAME}" ]]
-  echo "exec_in_container: $*" >&3
-  docker exec "${CONTAINER_DAEMON_NAME}" "$@"
+  echo "exec_in_container: $*"
+  run docker exec "${CONTAINER_DAEMON_NAME}" "$@"
 }
 
 getlog_container_daemon() {
@@ -107,9 +107,9 @@ get_app_env_var() {
   # We must wait for the container to have started to see the app environment.
   wait_for_container_daemon
 
-  echo -n "appenv: "           # Help debugging on error.
+  echo "appenv:"               # Help debugging on error.
   cat "${HOST_COM_DIR}/appenv" # Help debugging on error.
-  echo "searching app env for key: ${name}"
+  echo "searching appenv for key: ${name}"
   local value
   # shellcheck disable=2312
   value=$(awk -F= -v key="${name}" \

@@ -3,15 +3,15 @@
 load utils
 
 @test "Checking that yelp is installed..." {
-  run exec_in_container which yelp
+  exec_in_container which yelp
   assert_success
   yelp_app="${lines[0]}"
-  run exec_in_container test -x "${yelp_app}"
+  exec_in_container test -x "${yelp_app}"
   assert_success
 }
 
 @test "Checking that yelp runs..." {
-  run exec_in_container yelp -h
+  exec_in_container yelp -h
   assert_success
   assert_line --index 0 --regexp "^Usage:.*"
 }

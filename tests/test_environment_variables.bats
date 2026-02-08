@@ -8,14 +8,14 @@ load utils
 
 @test "Checking APP_NAME container environment variable..." {
   # Container-wide variable; we don't need to wait for gnucash to start.
-  run exec_in_container printenv APP_NAME
+  exec_in_container printenv APP_NAME
   assert_success
   assert_line --index 0 "GnuCash"
 }
 
 @test "Checking SECURE_CONNECTION container environment variable..." {
   # Container-wide variable; we don't need to wait for gnucash to start.
-  run exec_in_container printenv SECURE_CONNECTION
+  exec_in_container printenv SECURE_CONNECTION
   assert_success
   assert_line --index 0 "1"
 }
