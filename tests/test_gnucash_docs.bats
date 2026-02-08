@@ -26,10 +26,10 @@ load utils
   run exec_in_container sh -c \
     'ls -1 /usr/share/help/C/gnucash-guide/ | grep -Ec "\.(xml|docbook)$"'
   echo "exit status: ${status}" \
-    '(ls -1 /usr/share/help/C/gnucash-guide/ | grep -Ec "\.(xml|docbook)$"'
+    '(ls -1 /usr/share/help/C/gnucash-guide/ | grep -Ec "\.(xml|docbook)$")'
   [[ "${status}" -eq 0 ]]
   # Currently there are 26 files - expect some variation with versions.
-  echo "output: ${output}"
+  echo "lines[0]: ${lines[0]}"
   [[ "${lines[0]}" -ge '20' ]]
 }
 
@@ -51,9 +51,9 @@ load utils
   run exec_in_container sh -c \
     'ls -1 /usr/share/help/C/gnucash-manual/ | grep -Ec "\.(xml|docbook)$"'
   echo "exit status: ${status}" \
-    '(ls -1 /usr/share/help/C/gnucash-manual/ | grep -Ec "\.(xml|docbook)$"'
+    '(ls -1 /usr/share/help/C/gnucash-manual/ | grep -Ec "\.(xml|docbook)$")'
   [[ "${status}" -eq 0 ]]
   # Currently there are 18 files - expect some variation with versions.
-  echo "output: ${output}"
+  echo "lines[0]: ${lines[0]}"
   [[ "${lines[0]}" -ge '12' ]]
 }
