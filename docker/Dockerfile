@@ -44,7 +44,8 @@ FROM scratch AS icons-result
 COPY --from=icons-build /opt/noVNC/app/images/icons /opt/noVNC/app/images/icons
 
 # Use a separate stage for the icons source to support variable expansion.
-FROM --platform=linux/amd64 ${ICONS_IMAGE} AS icons-provider
+# hadolint ignore=DL3029
+FROM --platform=$BUILDPLATFORM ${ICONS_IMAGE} AS icons-provider
 
 # Build main image.
 FROM jlesage/baseimage-gui:${BASEIMAGE_VERSION} AS main-image-build
