@@ -177,18 +177,12 @@ jobs:
             echo "cache-from<<EOF"
             echo "${CACHE_FROM}"
             echo "EOF"
-          } >> "$GITHUB_OUTPUT"
-          {
             echo "cache-to<<EOF"
             echo "${CACHE_TO}"
             echo "EOF"
-          } >> "$GITHUB_OUTPUT"
-          {
             echo "icons-cache-from<<EOF"
             echo "${ICONS_CACHE_FROM}"
             echo "EOF"
-          } >> "$GITHUB_OUTPUT"
-          {
             echo "icons-cache-to<<EOF"
             echo "${ICONS_CACHE_TO}"
             echo "EOF"
