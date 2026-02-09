@@ -89,6 +89,9 @@ jobs:
           CACHE_IMAGE_NAME="ghcr.io/${{ github.repository }}/build-cache"
           CACHE_IMAGE_NAME="${CACHE_IMAGE_NAME,,}"
 
+          ICONS_CACHE_IMAGE_NAME="ghcr.io/${{ github.repository }}/gnucash-icons-cache"
+          ICONS_CACHE_IMAGE_NAME="${ICONS_CACHE_IMAGE_NAME,,}"
+
           sanitize() {
             echo "${1//[^a-zA-Z0-9._-]/_}"
           }
@@ -102,11 +105,19 @@ jobs:
             CACHE_TO="type=registry,ref=${CACHE_IMAGE_NAME}:${CLEAN_REF}"
             CACHE_TO="${CACHE_TO},mode=max"
 
+            ICONS_CACHE_FROM="type=registry,ref=${ICONS_CACHE_IMAGE_NAME}:${CLEAN_REF}
+            type=registry,ref=${ICONS_CACHE_IMAGE_NAME}:main"
+            ICONS_CACHE_TO="type=registry,ref=${ICONS_CACHE_IMAGE_NAME}:${CLEAN_REF}"
+            ICONS_CACHE_TO="${ICONS_CACHE_TO},mode=max"
+
           elif [[ $GITHUB_REF == 'refs/heads/main' ]]; then
             # For pushes to the main branch, we read from and write to the main
             # branch cache.
             CACHE_FROM="type=registry,ref=${CACHE_IMAGE_NAME}:main"
             CACHE_TO="type=registry,ref=${CACHE_IMAGE_NAME}:main,mode=max"
+
+            ICONS_CACHE_FROM="type=registry,ref=${ICONS_CACHE_IMAGE_NAME}:main"
+            ICONS_CACHE_TO="type=registry,ref=${ICONS_CACHE_IMAGE_NAME}:main,mode=max"
 
             # Try to identify if this push is the result of a PR merge and reuse
             # that PR's cache.
@@ -119,6 +130,9 @@ jobs:
               CLEAN_REF=$(sanitize "$PR_BRANCH")
               CACHE_FROM="type=registry,ref=${CACHE_IMAGE_NAME}:${CLEAN_REF}
               ${CACHE_FROM}"
+
+              ICONS_CACHE_FROM="type=registry,ref=${ICONS_CACHE_IMAGE_NAME}:${CLEAN_REF}
+              ${ICONS_CACHE_FROM}"
             fi
 
           elif [[ $GITHUB_REF == refs/heads/* ]]; then
@@ -131,11 +145,19 @@ jobs:
             CACHE_TO="type=registry,ref=${CACHE_IMAGE_NAME}:${CLEAN_REF}"
             CACHE_TO="${CACHE_TO},mode=max"
 
+            ICONS_CACHE_FROM="type=registry,ref=${ICONS_CACHE_IMAGE_NAME}:${CLEAN_REF}
+            type=registry,ref=${ICONS_CACHE_IMAGE_NAME}:main"
+            ICONS_CACHE_TO="type=registry,ref=${ICONS_CACHE_IMAGE_NAME}:${CLEAN_REF}"
+            ICONS_CACHE_TO="${ICONS_CACHE_TO},mode=max"
+
           else
             # For all other cases (e.g., tag builds), we read from and write to
             # the main branch cache.
             CACHE_FROM="type=registry,ref=${CACHE_IMAGE_NAME}:main"
             CACHE_TO="type=registry,ref=${CACHE_IMAGE_NAME}:main,mode=max"
+
+            ICONS_CACHE_FROM="type=registry,ref=${ICONS_CACHE_IMAGE_NAME}:main"
+            ICONS_CACHE_TO="type=registry,ref=${ICONS_CACHE_IMAGE_NAME}:main,mode=max"
           fi
 
           echo "::group::Cache tags"
@@ -145,6 +167,8 @@ jobs:
           echo "PR_BRANCH=${PR_BRANCH}"
           echo "CACHE_FROM=${CACHE_FROM}"
           echo "CACHE_TO=${CACHE_TO}"
+          echo "ICONS_CACHE_FROM=${ICONS_CACHE_FROM}"
+          echo "ICONS_CACHE_TO=${ICONS_CACHE_TO}"
           echo "::endgroup::"
 
           # Use HEREDOC syntax to preserve newline characters in cache-from/to
@@ -157,6 +181,16 @@ jobs:
           {
             echo "cache-to<<EOF"
             echo "${CACHE_TO}"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+          {
+            echo "icons-cache-from<<EOF"
+            echo "${ICONS_CACHE_FROM}"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+          {
+            echo "icons-cache-to<<EOF"
+            echo "${ICONS_CACHE_TO}"
             echo "EOF"
           } >> "$GITHUB_OUTPUT"
 
@@ -226,6 +260,19 @@ jobs:
             echo "tags=${TAGS}"
           } >> "$GITHUB_OUTPUT"
 
+      - name: Build icons image
+        uses: docker/build-push-action@v5
+        with:
+          context: docker
+          target: icons-result
+          platforms: linux/amd64
+          push: true
+          tags: localhost:5000/gnucash-icons:latest
+          build-args: |
+            BASEIMAGE_VERSION=${{ env.BASEIMAGE_VERSION }}
+          cache-from: ${{ steps.cache.outputs.icons-cache-from }}
+          cache-to: ${{ steps.cache.outputs.icons-cache-to }}
+
       - name: Build and push to local registry
         uses: docker/build-push-action@v5
         with:
@@ -237,6 +284,7 @@ jobs:
             BASEIMAGE_VERSION=${{ env.BASEIMAGE_VERSION }}
             GNUCASH_VERSION=${{ env.GNUCASH_VERSION }}
             LABEL_VERSION=${{ steps.meta.outputs.label_version }}
+            ICONS_IMAGE=localhost:5000/gnucash-icons:latest
           cache-from: ${{ steps.cache.outputs.cache-from }}
           cache-to: ${{ steps.cache.outputs.cache-to }}
 
