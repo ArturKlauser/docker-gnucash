@@ -41,7 +41,7 @@ EO_RUN
 
 # Export icons into an otherwise empty image.
 FROM scratch AS icons-result
-COPY --from=icons-build /opt/noVNC/app/images/icons /opt/noVNC/app/images/icons
+COPY --from=icons-build /opt/noVNC/app/images/icons /icons
 
 # Use a separate stage for the icons source to support variable expansion. For
 # multi-platform builds, this stage also copies the icons from the single
@@ -153,7 +153,7 @@ EO_RUN
 COPY rootfs/ /
 
 # Install the application icon (part 1).
-COPY --from=icons-provider /opt/noVNC/app/images/icons /opt/noVNC/app/images/icons
+COPY --from=icons-provider /icons /opt/noVNC/app/images/icons
 
 RUN <<EO_RUN
   set -ex

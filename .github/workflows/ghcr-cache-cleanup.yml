@@ -23,7 +23,9 @@ jobs:
       - name: Cleanup container images
         uses: dataaxiom/ghcr-cleanup-action@v1
         with:
-          packages: ${{ env.REPO_NAME }}/build-cache,${{ env.REPO_NAME }}/icons-build-cache
+          packages: >-
+            ${{ env.REPO_NAME }}/build-cache,
+            ${{ env.REPO_NAME }}/icons-build-cache
           older-than: 7 days
           delete-untagged: true
           delete-tags: '*'

@@ -86,15 +86,15 @@ jobs:
           HEAD_REF: ${{ github.head_ref }}
         run: |
           # The cache image name must be lowercase.
-          CACHE_IMAGE_NAME="ghcr.io/${{ github.repository }}/build-cache"
-          CACHE_IMAGE_NAME="${CACHE_IMAGE_NAME,,}"
+          CACHE_IMAGE="ghcr.io/${{ github.repository }}/build-cache"
+          CACHE_IMAGE="${CACHE_IMAGE,,}"
 
-          ICONS_CACHE_IMAGE_NAME="ghcr.io/${{ github.repository }}/icons-build-cache"
-          ICONS_CACHE_IMAGE_NAME="${ICONS_CACHE_IMAGE_NAME,,}"
+          ICONS_CACHE_IMAGE="ghcr.io/${{ github.repository }}/icons-build-cache"
+          ICONS_CACHE_IMAGE="${ICONS_CACHE_IMAGE,,}"
 
           # Icons are mostly static, so we use a single cache tag for them.
-          ICONS_CACHE_FROM="type=registry,ref=${ICONS_CACHE_IMAGE_NAME}:latest"
-          ICONS_CACHE_TO="type=registry,ref=${ICONS_CACHE_IMAGE_NAME}:latest,mode=max"
+          ICONS_CACHE_FROM="type=registry,ref=${ICONS_CACHE_IMAGE}:latest"
+          ICONS_CACHE_TO="type=registry,ref=${ICONS_CACHE_IMAGE}:latest,mode=max"
 
           sanitize() {
             echo "${1//[^a-zA-Z0-9._-]/_}"
@@ -104,16 +104,16 @@ jobs:
             # For PRs, we want to read from the main branch cache and the PR's
             # own cache, but only write to the PR's cache.
             CLEAN_REF=$(sanitize "$HEAD_REF")
-            CACHE_FROM="type=registry,ref=${CACHE_IMAGE_NAME}:${CLEAN_REF}
-            type=registry,ref=${CACHE_IMAGE_NAME}:main"
-            CACHE_TO="type=registry,ref=${CACHE_IMAGE_NAME}:${CLEAN_REF}"
+            CACHE_FROM="type=registry,ref=${CACHE_IMAGE}:${CLEAN_REF}
+            type=registry,ref=${CACHE_IMAGE}:main"
+            CACHE_TO="type=registry,ref=${CACHE_IMAGE}:${CLEAN_REF}"
             CACHE_TO="${CACHE_TO},mode=max"
 
           elif [[ $GITHUB_REF == 'refs/heads/main' ]]; then
             # For pushes to the main branch, we read from and write to the main
             # branch cache.
-            CACHE_FROM="type=registry,ref=${CACHE_IMAGE_NAME}:main"
-            CACHE_TO="type=registry,ref=${CACHE_IMAGE_NAME}:main,mode=max"
+            CACHE_FROM="type=registry,ref=${CACHE_IMAGE}:main"
+            CACHE_TO="type=registry,ref=${CACHE_IMAGE}:main,mode=max"
 
             # Try to identify if this push is the result of a PR merge and reuse
             # that PR's cache.
@@ -124,7 +124,7 @@ jobs:
             if [ -n "$PR_BRANCH" ] && [ "$PR_BRANCH" != "null" ]; then
               echo "Found PR source branch: $PR_BRANCH"
               CLEAN_REF=$(sanitize "$PR_BRANCH")
-              CACHE_FROM="type=registry,ref=${CACHE_IMAGE_NAME}:${CLEAN_REF}
+              CACHE_FROM="type=registry,ref=${CACHE_IMAGE}:${CLEAN_REF}
               ${CACHE_FROM}"
             fi
 
@@ -133,16 +133,16 @@ jobs:
             # branch cache.
             REF_NAME=${GITHUB_REF#refs/heads/}
             CLEAN_REF=$(sanitize "$REF_NAME")
-            CACHE_FROM="type=registry,ref=${CACHE_IMAGE_NAME}:${CLEAN_REF}
-            type=registry,ref=${CACHE_IMAGE_NAME}:main"
-            CACHE_TO="type=registry,ref=${CACHE_IMAGE_NAME}:${CLEAN_REF}"
+            CACHE_FROM="type=registry,ref=${CACHE_IMAGE}:${CLEAN_REF}
+            type=registry,ref=${CACHE_IMAGE}:main"
+            CACHE_TO="type=registry,ref=${CACHE_IMAGE}:${CLEAN_REF}"
             CACHE_TO="${CACHE_TO},mode=max"
 
           else
             # For all other cases (e.g., tag builds), we read from and write to
             # the main branch cache.
-            CACHE_FROM="type=registry,ref=${CACHE_IMAGE_NAME}:main"
-            CACHE_TO="type=registry,ref=${CACHE_IMAGE_NAME}:main,mode=max"
+            CACHE_FROM="type=registry,ref=${CACHE_IMAGE}:main"
+            CACHE_TO="type=registry,ref=${CACHE_IMAGE}:main,mode=max"
           fi
 
           echo "::group::Cache tags"
