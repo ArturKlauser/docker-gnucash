@@ -234,6 +234,21 @@ jobs:
             echo "tags=${TAGS}"
           } >> "$GITHUB_OUTPUT"
 
+      - name: Build icons image
+        # Build icons only on the native docker host platform. They are platform
+        # independent image files.
+        uses: docker/build-push-action@v5
+        with:
+          context: docker
+          target: icons-result
+          push: true
+          tags: >-
+            localhost:5000/${{ env.DOCKER_IMAGE_NAME }}:github-icons-ci
+          build-args: |
+            BASEIMAGE_VERSION=${{ env.BASEIMAGE_VERSION }}
+          cache-from: ${{ steps.cache.outputs.icons-cache-from }}
+          cache-to: ${{ steps.cache.outputs.icons-cache-to }}
+
       - name: Build and push to local registry
         uses: docker/build-push-action@v5
         with:
@@ -245,6 +260,7 @@ jobs:
             BASEIMAGE_VERSION=${{ env.BASEIMAGE_VERSION }}
             GNUCASH_VERSION=${{ env.GNUCASH_VERSION }}
             LABEL_VERSION=${{ steps.meta.outputs.label_version }}
+            ICONS_IMAGE=localhost:5000/${{ env.DOCKER_IMAGE_NAME }}:github-icons-ci
           cache-from: ${{ steps.cache.outputs.cache-from }}
           cache-to: ${{ steps.cache.outputs.cache-to }}
 
