@@ -39,12 +39,16 @@ RUN --mount=type=cache,target=/var/cache/apk <<EO_RUN
     > /opt/noVNC/app/images/icons/favicons_inner.html
 EO_RUN
 
-# Export icons.
+# Export icons into an otherwise empty image.
 FROM scratch AS icons-result
 COPY --from=icons-build /opt/noVNC/app/images/icons /opt/noVNC/app/images/icons
 
-# Use a separate stage for the icons source to support variable expansion.
+# Use a separate stage for the icons source to support variable expansion. For
+# multi-platform builds, this stage also copies the icons from the single
+# platform they were built on (BUILDPLATFORM) to whatever the target platform is
+# for the main-image-build below.
 # hadolint ignore=DL3029
+ARG BUILDPLATFORM
 FROM --platform=$BUILDPLATFORM ${ICONS_IMAGE} AS icons-provider
 
 # Build main image.
