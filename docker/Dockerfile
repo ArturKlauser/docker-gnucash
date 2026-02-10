@@ -11,6 +11,7 @@ ARG WITH_DOCS=true
 ARG WITH_FINANCE_QUOTE=true
 ARG USE_GNUCASH_PPA=true
 ARG LABEL_VERSION=unknown
+ARG ICONS_IMAGE=icons-result
 
 # Pull base image for icon generator script.
 FROM jlesage/baseimage-gui:${BASEIMAGE_VERSION} AS icons-source
@@ -37,6 +38,17 @@ RUN --mount=type=cache,target=/var/cache/apk <<EO_RUN
   grep -E -v '<!-- (BEGIN|END) Favicons -->' /opt/noVNC/index.html \
     > /opt/noVNC/app/images/icons/favicons_inner.html
 EO_RUN
+
+# Export icons into an otherwise empty image.
+FROM scratch AS icons-result
+COPY --from=icons-build /opt/noVNC/app/images/icons /icons
+
+# Use a separate stage for the icons source to support variable expansion. For
+# multi-platform builds, this stage also copies the icons from the single
+# platform they were built on (BUILDPLATFORM) to whatever the target platform is
+# for the main-image-build below.
+ARG BUILDPLATFORM
+FROM --platform=$BUILDPLATFORM ${ICONS_IMAGE} AS icons-provider
 
 # Build main image.
 FROM jlesage/baseimage-gui:${BASEIMAGE_VERSION} AS main-image-build
@@ -122,11 +134,6 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
   fi
   apt-get remove -y software-properties-common
   apt-get autoremove -y
-  # Remove the files installed by the locales package, but keep the generated
-  # locale data.
-  # We cannot remove the package itself (e.g. via 'apt-get remove locales')
-  # because gnucash depends on it.
-  rm -rf /usr/share/i18n /usr/sbin/locale-gen /usr/sbin/update-locale /usr/sbin/validlocale
 EO_RUN
 
 # Helpers for image debugging.
@@ -140,7 +147,7 @@ EO_RUN
 COPY rootfs/ /
 
 # Install the application icon (part 1).
-COPY --from=icons-build /opt/noVNC/app/images/icons /opt/noVNC/app/images/icons
+COPY --from=icons-provider /icons /opt/noVNC/app/images/icons
 
 RUN <<EO_RUN
   set -ex
