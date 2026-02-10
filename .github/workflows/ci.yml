@@ -89,6 +89,13 @@ jobs:
           CACHE_IMAGE_NAME="ghcr.io/${{ github.repository }}/build-cache"
           CACHE_IMAGE_NAME="${CACHE_IMAGE_NAME,,}"
 
+          ICONS_CACHE_IMAGE_NAME="ghcr.io/${{ github.repository }}/icons-build-cache"
+          ICONS_CACHE_IMAGE_NAME="${ICONS_CACHE_IMAGE_NAME,,}"
+
+          # Icons are mostly static, so we use a single cache tag for them.
+          ICONS_CACHE_FROM="type=registry,ref=${ICONS_CACHE_IMAGE_NAME}:latest"
+          ICONS_CACHE_TO="type=registry,ref=${ICONS_CACHE_IMAGE_NAME}:latest,mode=max"
+
           sanitize() {
             echo "${1//[^a-zA-Z0-9._-]/_}"
           }
