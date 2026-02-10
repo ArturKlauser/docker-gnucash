@@ -250,24 +250,24 @@ jobs:
           target: icons-result
           push: true
           tags: >-
-            localhost:5000/${{ env.DOCKER_IMAGE_NAME }}:github-icons-ci
+            localhost:5000/${{ env.DOCKER_IMAGE_NAME }}:icons-ci
           build-args: |
             BASEIMAGE_VERSION=${{ env.BASEIMAGE_VERSION }}
           cache-from: ${{ steps.cache.outputs.icons-cache-from }}
           cache-to: ${{ steps.cache.outputs.icons-cache-to }}
 
-      - name: Build and push to local registry
+      - name: Build main image
         uses: docker/build-push-action@v5
         with:
           context: docker
           platforms: ${{ env.PLATFORMS }}
           push: true
-          tags: localhost:5000/${{ env.DOCKER_IMAGE_NAME }}:github-ci
+          tags: localhost:5000/${{ env.DOCKER_IMAGE_NAME }}:main-ci
           build-args: |
             BASEIMAGE_VERSION=${{ env.BASEIMAGE_VERSION }}
             GNUCASH_VERSION=${{ env.GNUCASH_VERSION }}
             LABEL_VERSION=${{ steps.meta.outputs.label_version }}
-            ICONS_IMAGE=localhost:5000/${{ env.DOCKER_IMAGE_NAME }}:github-icons-ci
+            ICONS_IMAGE=localhost:5000/${{ env.DOCKER_IMAGE_NAME }}:icons-ci
           cache-from: ${{ steps.cache.outputs.cache-from }}
           cache-to: ${{ steps.cache.outputs.cache-to }}
 
@@ -277,9 +277,9 @@ jobs:
           # Get the metadata of all platform images from the multi-platform
           # manifest of the above build.
           docker buildx imagetools inspect \
-            localhost:5000/${{ env.DOCKER_IMAGE_NAME }}:github-ci
+            localhost:5000/${{ env.DOCKER_IMAGE_NAME }}:main-ci
           echo "raw=$(docker buildx imagetools inspect --raw \
-            localhost:5000/${{ env.DOCKER_IMAGE_NAME }}:github-ci \
+            localhost:5000/${{ env.DOCKER_IMAGE_NAME }}:main-ci \
             | tr -d '\n')" >> "$GITHUB_OUTPUT"
 
       - name: Test image
@@ -317,7 +317,7 @@ jobs:
             fi
             # Run the test suite on one architecture.
             export DOCKER_IMAGE=localhost:5000/${{ env.DOCKER_IMAGE_NAME }}
-            export DOCKER_IMAGE="${DOCKER_IMAGE}:github-ci@${digest}"
+            export DOCKER_IMAGE="${DOCKER_IMAGE}:main-ci@${digest}"
             echo "Running tests on image ${DOCKER_IMAGE}..."
             docker pull "${DOCKER_IMAGE}"
             docker run --rm "${DOCKER_IMAGE}" \
@@ -348,7 +348,7 @@ jobs:
           # is pushed.
           # shellcheck disable=SC2086
           docker buildx imagetools create $TAG_ARGS \
-            localhost:5000/${{ env.DOCKER_IMAGE_NAME }}:github-ci
+            localhost:5000/${{ env.DOCKER_IMAGE_NAME }}:main-ci
 
       - name: Update Dockerhub description
         if: >-

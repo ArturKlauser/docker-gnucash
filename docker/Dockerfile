@@ -47,7 +47,6 @@ COPY --from=icons-build /opt/noVNC/app/images/icons /icons
 # multi-platform builds, this stage also copies the icons from the single
 # platform they were built on (BUILDPLATFORM) to whatever the target platform is
 # for the main-image-build below.
-# hadolint ignore=DL3029
 ARG BUILDPLATFORM
 FROM --platform=$BUILDPLATFORM ${ICONS_IMAGE} AS icons-provider
 
@@ -135,11 +134,6 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
   fi
   apt-get remove -y software-properties-common
   apt-get autoremove -y
-  # Remove the files installed by the locales package, but keep the generated
-  # locale data.
-  # We cannot remove the package itself (e.g. via 'apt-get remove locales')
-  # because gnucash depends on it.
-  rm -rf /usr/share/i18n /usr/sbin/locale-gen /usr/sbin/update-locale /usr/sbin/validlocale
 EO_RUN
 
 # Helpers for image debugging.
