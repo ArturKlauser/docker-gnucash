@@ -1,0 +1,11 @@
+#!/bin/sh
+set -e
+set -u
+
+if [ "${OAUTH2_PROXY:-}" != "true" ]; then
+    # Service disabled.
+    exec s6-svc -d /var/run/s6/services/oauth2-proxy
+    exit 0
+fi
+
+exec oauth2-proxy --config /config/oauth2-proxy.cfg --http-address=127.0.0.1:4180
