@@ -10,10 +10,10 @@ ARG GNUCASH_VERSION=undefined
 ARG WITH_DOCS=true
 ARG WITH_FINANCE_QUOTE=true
 ARG USE_GNUCASH_PPA=true
-ARG LABEL_VERSION=unknown
-ARG ICONS_IMAGE=icons-result
 ARG WITH_OAUTH2_PROXY=false
 ARG OAUTH2_PROXY_VERSION=v7.14.2
+ARG LABEL_VERSION=unknown
+ARG ICONS_IMAGE=icons-result
 
 # Pull base image for icon generator script.
 FROM jlesage/baseimage-gui:${BASEIMAGE_VERSION} AS icons-source

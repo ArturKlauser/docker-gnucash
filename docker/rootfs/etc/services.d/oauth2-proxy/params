@@ -2,10 +2,11 @@
 set -e
 set -u
 
-# shellcheck disable=SC2034
-OAUTH2_PROXY_PARAMS="--config /config/oauth2-proxy.cfg"
+printf '%s\n' "--config"
+printf '%s\n' "/config/oauth2-proxy.cfg"
+printf '%s\n' "--http-address=unix:///tmp/oauth2-proxy.sock"
 
 # Enable debug mode?
-if is-bool-val-true "${OAUTH2_PROXY_DEBUG:-0}"; then
-    OAUTH2_PROXY_PARAMS="${OAUTH2_PROXY_PARAMS} --logging.level=debug"
+if is-bool-val-true "${CONTAINER_DEBUG:-0}"; then
+  printf '%s\n' "--logging-level=debug"
 fi

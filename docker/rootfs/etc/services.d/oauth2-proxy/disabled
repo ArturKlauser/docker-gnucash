@@ -1,0 +1,12 @@
+#!/bin/sh
+set -e
+set -u
+
+# Check if the service should be disabled.
+if is-bool-val-false "${OAUTH2_PROXY:-0}"; then
+  # Service disabled.
+  exit 0
+fi
+
+# Service enabled.
+exit 1

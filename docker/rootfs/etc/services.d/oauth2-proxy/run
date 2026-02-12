@@ -2,7 +2,4 @@
 set -e
 set -u
 
-# shellcheck source=params
-. ./params
-
-exec oauth2-proxy ${OAUTH2_PROXY_PARAMS} --http-address=unix:/tmp/oauth2-proxy.sock
+exec oauth2-proxy "$@"
