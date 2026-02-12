@@ -30,6 +30,7 @@ cp /defaults/default_oauth2_proxy.conf /var/tmp/nginx/auth.conf
 WEB_DATA_FILE="/tmp/.webdata.json"
 if [ -f "${WEB_DATA_FILE}" ]; then
   # Use sed to replace "webAuthSupport": false with "webAuthSupport": true
+  chmod 644 "${WEB_DATA_FILE}"
   sed -i 's/"webAuthSupport": false/"webAuthSupport": true/' "${WEB_DATA_FILE}"
   chmod 444 "${WEB_DATA_FILE}"
 fi
