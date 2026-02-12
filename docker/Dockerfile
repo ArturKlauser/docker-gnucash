@@ -182,6 +182,12 @@ RUN <<EO_RUN
   fi
   rm -rf /opt/with-docs
 
+  # Conditionally install the OAuth2 Proxy configuration.
+  if [ "${WITH_OAUTH2_PROXY}" = "true" ]; then
+    cp -r /opt/with-oauth2-proxy/* /
+  fi
+  rm -rf /opt/with-oauth2-proxy
+
   # Install the application icon (part 2).
   # Replace content between BEGIN and END markers.
   favicons_html='/opt/noVNC/app/images/icons/favicons_inner.html'
