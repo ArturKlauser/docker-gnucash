@@ -5,8 +5,8 @@ set -u # Treat unset variables as an error.
 
 is_number() {
   case "${1:-}" in
-  '' | *[!0-9]*) return 1 ;;
-  *) return 0 ;;
+    '' | *[!0-9]*) return 1 ;;
+    *) return 0 ;;
   esac
 }
 
