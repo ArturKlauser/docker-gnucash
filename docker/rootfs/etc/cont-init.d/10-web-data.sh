@@ -4,10 +4,10 @@ set -e # Exit immediately if a command exits with a non-zero status.
 set -u # Treat unset variables as an error.
 
 is_number() {
-    case "${1:-}" in
-        '' | *[!0-9]*) return 1 ;;
-        *) return 0 ;;
-    esac
+  case "${1:-}" in
+  '' | *[!0-9]*) return 1 ;;
+  *) return 0 ;;
+  esac
 }
 
 WEB_DATA_FILE="/tmp/.webdata.json"
@@ -19,64 +19,68 @@ rm -f "${WEB_DATA_FILE}"
 printf '{\n' >> "${WEB_DATA_FILE}"
 
 # Container instance UID.
-printf '    "containerInstanceUID": "%s"' "$(cat /.docker-instance/uuid)" >> "${WEB_DATA_FILE}"
+CONTAINER_INSTANCE_UID=$(cat /.docker-instance/uuid)
+printf '    "containerInstanceUID": "%s"' "${CONTAINER_INSTANCE_UID}" >> "${WEB_DATA_FILE}"
 
 # Add application name.
+# shellcheck disable=SC2154
 printf ',\n    "applicationName": "%s"' "${APP_NAME}" >> "${WEB_DATA_FILE}"
 
 # Add application version.
 if [ -n "${APP_VERSION:-}" ]; then
-    printf ',\n    "applicationVersion": "%s"' "${APP_VERSION}" >> "${WEB_DATA_FILE}"
+  printf ',\n    "applicationVersion": "%s"' "${APP_VERSION}" >> "${WEB_DATA_FILE}"
 fi
 
 # Add Docker image version.
 if [ -n "${DOCKER_IMAGE_VERSION:-}" ]; then
-    printf ',\n    "dockerImageVersion": "%s"' "${DOCKER_IMAGE_VERSION}" >> "${WEB_DATA_FILE}"
+  printf ',\n    "dockerImageVersion": "%s"' "${DOCKER_IMAGE_VERSION}" >> "${WEB_DATA_FILE}"
 fi
 
 # Add dark mode.
 if is-bool-val-true "${DARK_MODE:-0}"; then
-    printf ',\n    "darkMode": true' >> "${WEB_DATA_FILE}"
+  printf ',\n    "darkMode": true' >> "${WEB_DATA_FILE}"
 else
-    printf ',\n    "darkMode": false' >> "${WEB_DATA_FILE}"
+  printf ',\n    "darkMode": false' >> "${WEB_DATA_FILE}"
 fi
 
 # Add application's window width.
+# shellcheck disable=SC2310
 if is_number "${DISPLAY_WIDTH:-}"; then
-    printf ',\n    "applicationWindowWidth": %s' "${DISPLAY_WIDTH}" >> "${WEB_DATA_FILE}"
+  printf ',\n    "applicationWindowWidth": %s' "${DISPLAY_WIDTH}" >> "${WEB_DATA_FILE}"
 fi
 
 # Add application's window height.
+# shellcheck disable=SC2310
 if is_number "${DISPLAY_HEIGHT:-}"; then
-    printf ',\n    "applicationWindowHeight": %s' "${DISPLAY_HEIGHT}" >> "${WEB_DATA_FILE}"
+  printf ',\n    "applicationWindowHeight": %s' "${DISPLAY_HEIGHT}" >> "${WEB_DATA_FILE}"
 fi
 
 # Add audio support.
 if is-bool-val-true "${WEB_AUDIO:-0}"; then
-    printf ',\n    "audioSupport": true' >> "${WEB_DATA_FILE}"
+  printf ',\n    "audioSupport": true' >> "${WEB_DATA_FILE}"
 else
-    printf ',\n    "audioSupport": false' >> "${WEB_DATA_FILE}"
+  printf ',\n    "audioSupport": false' >> "${WEB_DATA_FILE}"
 fi
 
 # Add web authentication support.
 if is-bool-val-true "${WEB_AUTHENTICATION:-0}" || [ "${OAUTH2_PROXY:-}" = "true" ]; then
-    printf ',\n    "webAuthSupport": true' >> "${WEB_DATA_FILE}"
+  printf ',\n    "webAuthSupport": true' >> "${WEB_DATA_FILE}"
 else
-    printf ',\n    "webAuthSupport": false' >> "${WEB_DATA_FILE}"
+  printf ',\n    "webAuthSupport": false' >> "${WEB_DATA_FILE}"
 fi
 
 # Add file manager support.
 if is-bool-val-true "${WEB_FILE_MANAGER:-0}"; then
-    printf ',\n    "fileManager": true' >> "${WEB_DATA_FILE}"
+  printf ',\n    "fileManager": true' >> "${WEB_DATA_FILE}"
 else
-    printf ',\n    "fileManager": false' >> "${WEB_DATA_FILE}"
+  printf ',\n    "fileManager": false' >> "${WEB_DATA_FILE}"
 fi
 
 # Web notification support.
 if is-bool-val-true "${WEB_NOTIFICATION:-0}"; then
-    printf ',\n    "notificationSupport": true' >> "${WEB_DATA_FILE}"
+  printf ',\n    "notificationSupport": true' >> "${WEB_DATA_FILE}"
 else
-    printf ',\n    "notificationSupport": false' >> "${WEB_DATA_FILE}"
+  printf ',\n    "notificationSupport": false' >> "${WEB_DATA_FILE}"
 fi
 
 # End of the JSON file.

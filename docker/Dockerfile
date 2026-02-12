@@ -147,6 +147,7 @@ EO_RUN
 #EORUN
 
 # Install OAuth2 Proxy.
+# hadolint ignore=DL3008,SC2086
 RUN if [ "${USE_OAUTH2_PROXY}" = "true" ]; then \
     apt-get update && \
     apt-get install -y --no-install-recommends curl ca-certificates && \
@@ -158,8 +159,8 @@ RUN if [ "${USE_OAUTH2_PROXY}" = "true" ]; then \
     esac && \
     curl -fsSL "https://github.com/oauth2-proxy/oauth2-proxy/releases/download/${OAUTH2_PROXY_VERSION}/oauth2-proxy-${OAUTH2_PROXY_VERSION}.${ARCH}.tar.gz" -o oauth2-proxy.tar.gz && \
     tar -xzf oauth2-proxy.tar.gz && \
-    mv oauth2-proxy-${OAUTH2_PROXY_VERSION}.${ARCH}/oauth2-proxy /usr/local/bin/ && \
-    rm -rf oauth2-proxy.tar.gz oauth2-proxy-${OAUTH2_PROXY_VERSION}.${ARCH} && \
+    mv "oauth2-proxy-${OAUTH2_PROXY_VERSION}.${ARCH}/oauth2-proxy" /usr/local/bin/ && \
+    rm -rf oauth2-proxy.tar.gz "oauth2-proxy-${OAUTH2_PROXY_VERSION}.${ARCH}" && \
     chmod +x /usr/local/bin/oauth2-proxy && \
     apt-get purge -y --auto-remove curl && \
     rm -rf /var/lib/apt/lists/*; \
