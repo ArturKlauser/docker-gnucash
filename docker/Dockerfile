@@ -140,7 +140,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
 
   if [ "${WITH_OAUTH2_PROXY}" = "true" ]; then
     echo "Installing OAuth2 Proxy ${OAUTH2_PROXY_VERSION}..."
-    apt-get install -y --no-install-recommends curl ca-certificates
+    apt-get install -y --no-install-recommends curl ca-certificates binutils
     case "${TARGETARCH}" in
       "amd64") ARCH="linux-amd64" ;;
       "arm64") ARCH="linux-arm64" ;;
@@ -153,8 +153,9 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     tar -xzf oauth2-proxy.tar.gz
     mv "oauth2-proxy-${OAUTH2_PROXY_VERSION}.${ARCH}/oauth2-proxy" /usr/local/bin/
     rm -rf oauth2-proxy.tar.gz "oauth2-proxy-${OAUTH2_PROXY_VERSION}.${ARCH}"
+    strip /usr/local/bin/oauth2-proxy
     chmod +x /usr/local/bin/oauth2-proxy
-    apt-get purge -y --auto-remove curl
+    apt-get purge -y --auto-remove curl binutils
   fi
 
   apt-get remove -y software-properties-common
