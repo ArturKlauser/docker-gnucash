@@ -12,6 +12,8 @@ ARG WITH_FINANCE_QUOTE=true
 ARG USE_GNUCASH_PPA=true
 ARG LABEL_VERSION=unknown
 ARG ICONS_IMAGE=icons-result
+ARG WITH_OAUTH2_PROXY=false
+ARG OAUTH2_PROXY_VERSION=v7.14.2
 
 # Pull base image for icon generator script.
 FROM jlesage/baseimage-gui:${BASEIMAGE_VERSION} AS icons-source
@@ -62,8 +64,8 @@ ARG WITH_DOCS
 ARG WITH_FINANCE_QUOTE
 ARG USE_GNUCASH_PPA
 ARG LABEL_VERSION
-ARG USE_OAUTH2_PROXY=false
-ARG OAUTH2_PROXY_VERSION=v7.14.2
+ARG WITH_OAUTH2_PROXY
+ARG OAUTH2_PROXY_VERSION
 ARG TARGETARCH
 
 # Set the name of the application.
@@ -135,6 +137,26 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     apt-get install -y --no-install-recommends gnucash-docs
     add-apt-repository --remove -y "${repo}"
   fi
+
+  if [ "${WITH_OAUTH2_PROXY}" = "true" ]; then
+    echo "Installing OAuth2 Proxy ${OAUTH2_PROXY_VERSION}..."
+    apt-get install -y --no-install-recommends curl ca-certificates
+    case "${TARGETARCH}" in
+      "amd64") ARCH="linux-amd64" ;;
+      "arm64") ARCH="linux-arm64" ;;
+      *)
+        echo "Unsupported architecture: ${TARGETARCH}"
+        exit 1
+        ;;
+    esac
+    curl -fsSL "https://github.com/oauth2-proxy/oauth2-proxy/releases/download/${OAUTH2_PROXY_VERSION}/oauth2-proxy-${OAUTH2_PROXY_VERSION}.${ARCH}.tar.gz" -o oauth2-proxy.tar.gz
+    tar -xzf oauth2-proxy.tar.gz
+    mv "oauth2-proxy-${OAUTH2_PROXY_VERSION}.${ARCH}/oauth2-proxy" /usr/local/bin/
+    rm -rf oauth2-proxy.tar.gz "oauth2-proxy-${OAUTH2_PROXY_VERSION}.${ARCH}"
+    chmod +x /usr/local/bin/oauth2-proxy
+    apt-get purge -y --auto-remove curl
+  fi
+
   apt-get remove -y software-properties-common
   apt-get autoremove -y
 EO_RUN
@@ -145,26 +167,6 @@ EO_RUN
 #  apt-get update
 #  apt-get install -y --no-install-recommends less strace xdg-utils
 #EORUN
-
-# Install OAuth2 Proxy.
-# hadolint ignore=DL3008,SC2086
-RUN if [ "${USE_OAUTH2_PROXY}" = "true" ]; then \
-    apt-get update && \
-    apt-get install -y --no-install-recommends curl ca-certificates && \
-    echo "Installing OAuth2 Proxy ${OAUTH2_PROXY_VERSION}..." && \
-    case "${TARGETARCH}" in \
-        "amd64") ARCH="linux-amd64" ;; \
-        "arm64") ARCH="linux-arm64" ;; \
-        *) echo "Unsupported architecture: ${TARGETARCH}"; exit 1 ;; \
-    esac && \
-    curl -fsSL "https://github.com/oauth2-proxy/oauth2-proxy/releases/download/${OAUTH2_PROXY_VERSION}/oauth2-proxy-${OAUTH2_PROXY_VERSION}.${ARCH}.tar.gz" -o oauth2-proxy.tar.gz && \
-    tar -xzf oauth2-proxy.tar.gz && \
-    mv "oauth2-proxy-${OAUTH2_PROXY_VERSION}.${ARCH}/oauth2-proxy" /usr/local/bin/ && \
-    rm -rf oauth2-proxy.tar.gz "oauth2-proxy-${OAUTH2_PROXY_VERSION}.${ARCH}" && \
-    chmod +x /usr/local/bin/oauth2-proxy && \
-    apt-get purge -y --auto-remove curl && \
-    rm -rf /var/lib/apt/lists/*; \
-fi
 
 # Copy the rootfs directory.
 COPY rootfs/ /
