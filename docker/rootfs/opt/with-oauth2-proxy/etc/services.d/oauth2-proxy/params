@@ -1,0 +1,15 @@
+#!/bin/sh
+
+set -e # Exit immediately if a command exits with a non-zero status.
+set -u # Treat unset variables as an error.
+
+echo "--config"
+echo "/config/oauth2-proxy.cfg"
+echo "--http-address=unix:///tmp/oauth2-proxy.sock"
+
+# Enable debug mode?
+if is-bool-val-true "${CONTAINER_DEBUG:-0}"; then
+  echo "--standard-logging"
+  echo "--auth-logging"
+  echo "--request-logging"
+fi
