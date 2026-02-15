@@ -1,0 +1,13 @@
+#!/bin/sh
+
+set -e # Exit immediately if a command exits with a non-zero status.
+set -u # Treat unset variables as an error.
+
+# Check if the service should be disabled.
+if is-bool-val-false "${OAUTH2_PROXY:-0}"; then
+  # Service disabled.
+  echo "true"
+else
+  # Service enabled.
+  echo "false"
+fi
