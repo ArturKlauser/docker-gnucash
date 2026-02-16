@@ -251,7 +251,7 @@ USER_ID=$(id -u) GROUP_ID=$(id -g) IMAGE=gnucash docker compose up -d
 | `BASEIMAGE_VERSION` | Version of `docker-baseimage-gui` to start with. | unset - must be set on command line |
 | `GNUCASH_VERSION` | Version of `gnucash` package to install. | unset - must be set on command line |
 | `WITH_DOCS` | Set to `false` to build the image without GnuCash documentation (1). | `true` |
-| `WITH_OAUTH2_PROXY` | Set to `true` to build the image with OAuth2 Proxy support (2). | `false` |
+| `WITH_OAUTH2_PROXY` | Set to `false` to build the image without OAuth2 Proxy support (2). | `true` |
 | `WITH_FINANCE_QUOTE` | Set to `false` to build the image without Finance::Quote support (3). | `true` |
 
 1. At the time of writing (Feb. 2026), the documentation adds ~92 MB (~8%) to
