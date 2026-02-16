@@ -126,8 +126,8 @@ docker run -d \
 > If you want to continue working with GnuCash data that you were using on your
 > host, you need to copy several files to the container volumes:
 > * **data**: Each "book" (set of accounts) stores its main data in a
->   `*.gnucash` file. Copy the file you explicitly "open" in the GnuCash app
->   into the container's `/data` directory.
+>   `*.gnucash` file. This is the file that you explicitly "open" in the GnuCash
+>   app. Copy this file into the container's `/data` directory.
 >   * Alternatively, export database-backed books (sqlite/mysql/postgres) as
 >     `*.gnucash` files ("File -> Save As") for import into the container.
 > * **config**: The `*.gnucash` file contains main "book" data (account names,
@@ -147,14 +147,16 @@ docker run -d \
 >       `/config/xdg/config/dconf/user`.
 >
 >       To inspect the file, use `dconf dump /org/gnucash/` (all settings) or
->       `dconf read ...` (specific value). Note that `dconf` is not installed in
->       the `docker-gnucash` image.
+>       `dconf read /org/gnucash/GnuCash/dialogs/tip-of-the-day/show-at-startup`
+>       for that specific value. Note that `dconf` is not installed in the
+>       `docker-gnucash` image.
 >
 >   * MacOS host:
 >     * Configuration location: Open "Gnucash -> About Gnucash" to see
->       `GNC_USERDATA_DIR` (typically `~/Library/Application Support/GnuCash`).
->       This directory contains `books`, `checks`, `config`, `accelerator-map`,
->       and `saved-reports*`. Copy the entire `GNC_USERDATA_DIR` directory to
+>       `GNC_USERDATA_DIR` and `GNC_USERCONFIG_DIR` (typically
+>       `~/Library/Application Support/GnuCash`). This directory contains
+>       `books`, `checks`, `config`, `accelerator-map`, and `saved-reports*`.
+>       Copy the entire `GNC_USERDATA_DIR` directory to
 >       `/config/xdg/data/gnucash`.
 >     * More settings: `~/Library/Preferences/org.gnucash.GnuCash.plist`. This
 >       file is similar to the Linux `dconf` database. Direct import isn't
@@ -176,7 +178,8 @@ docker run -d \
 > * `/config/certs/web-fullchain.pem`: The full chain certificate.
 > * `/config/certs/web-privkey.pem`: The private key.
 >
-> Example: Copy `fullchain.cer` and `mydomain.com.key` to these locations.
+> Example: For Let's Encrypt, copy `fullchain.cer` and `mydomain.com.key` to
+> these locations.
 >
 > 1. Stop the container.
 > 2. Copy and rename your certificate files to the `certs` subdirectory of your
@@ -210,16 +213,16 @@ docker run -d \
 > 3. Set `SECURE_CONNECTION=1` (default), as OAuth2 Proxy requires HTTPS.
 >
 > When enabled, the container checks for `/config/oauth2-proxy.cfg`. If missing,
-> a default GitHub configuration is created.
+> a default configuration for the GitHub identity provider is created.
 >
 > **Important:** The default configuration is incomplete. Edit
 > `/config/oauth2-proxy.cfg` to configure your provider (client ID, client
 > secret, etc.). Look for `CHANGE THIS`.
 >
-> A local password database at `/config/oauth2-proxy-htpasswd` allows local user
-> login (create entries with `htpasswd -B`). If `WEB_AUTHENTICATION_USERNAME`
-and `WEB_AUTHENTICATION_PASSWORD` are set on startup, that user is added
-automatically.
+> A local password database at `/config/oauth2-proxy-htpasswd` additionally
+> allows local user login (create entries with `htpasswd -B`). If
+> `WEB_AUTHENTICATION_USERNAME` and `WEB_AUTHENTICATION_PASSWORD` are set on
+> startup, that user is added automatically.
 > </details>
 
 ## Local Image Build
