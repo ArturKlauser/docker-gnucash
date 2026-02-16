@@ -100,6 +100,10 @@ docker run -d \
 | `TZ` | Timezone (e.g., `America/New_York`). | `America/Los_Angeles` |
 | `CONFIG_DIR` | Host path for the application configuration directory. | `./config` |
 | `DATA_DIR` | Host path for the GnuCash data files directory. | `./data` |
+| `WEB_AUTHENTICATION` | Enable web authentication. Check the documentation at [jlesage/docker-baseimage-gui](https://github.com/jlesage/docker-baseimage-gui) for details. | unset (optional) |
+| `WEB_AUTHENTICATION_USERNAME` | Username for web authentication. | unset (optional) |
+| `WEB_AUTHENTICATION_PASSWORD` | Password for web authentication. | unset (optional) |
+| `OAUTH2_PROXY` | Enable OAuth2 Proxy support. | unset (optional) |
 
 ### Volumes
 
@@ -203,6 +207,32 @@ docker run -d \
 > backend (container) certificate is self-signed.
 > </details>
 
+> [!TIP]
+> <details>
+> <summary>How to secure access with oauth2-proxy</summary>
+>
+> You can secure access to the GnuCash web interface using
+> [OAuth2 Proxy](https://oauth2-proxy.github.io/oauth2-proxy/). This allows you
+> to authenticate users via an external identity provider (like Google, GitHub,
+> etc.) before they can access the application.
+>
+> To enable this feature, you must:
+> 1.  Build the image with `WITH_OAUTH2_PROXY=true` (or use an image built with
+>     this option).
+> 2.  Set the `OAUTH2_PROXY` environment variable to `1` (or `true`) in your
+>     `docker-compose.yml` or `docker run` command.
+> 3.  Set the `SECURE_CONNECTION` environment variable to `1`, as OAuth2 Proxy
+>     requires HTTPS.
+>
+> When the container starts with `OAUTH2_PROXY` enabled, it will check for a
+> configuration file at `/config/oauth2-proxy.cfg`. If one does not exist, a
+> default configuration file will be created.
+>
+> **Important:** The default configuration is not functional out-of-the-box. You
+> need to edit `/config/oauth2-proxy.cfg` to configure your specific OAuth2
+> provider (client ID, client secret, etc.) and other settings.
+> </details>
+
 ## Local Image Build
 
 > [!NOTE]
@@ -230,10 +260,12 @@ USER_ID=$(id -u) GROUP_ID=$(id -g) IMAGE=gnucash docker compose up -d
 | `GNUCASH_VERSION` | Version of `gnucash` package to install. | unset - must be set on command line |
 | `WITH_DOCS` | Set to `false` to build the image without GnuCash documentation (1). | `true` |
 | `WITH_FINANCE_QUOTE` | Set to `false` to build the image without Finance::Quote support (2). | `true` |
+| `WITH_OAUTH2_PROXY` | Set to `true` to build the image with OAuth2 Proxy support (3). | `false` |
 
-1.  Note, however, that at the time of writing (Jan 2026), this only saves ~90 MB
+1.  Note, however, that at the time of writing (Feb. 2026), this only saves ~90 MB
     (~8%) of docker image size. The majority of the image size of ~1.1 GB is the
     `gnucash` package itself and its dependencies.
 2.  On some Ubuntu versions, `gnucash` has a hard dependency on
     `libfinance-quote-perl`, so disabling `WITH_FINANCE_QUOTE` might not
     actually remove the package.
+3.  At the time of this writing (Feb. 2026), oauth2-proxy adds about 27 MB to the uncompressed docker image.

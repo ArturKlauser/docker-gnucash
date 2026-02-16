@@ -18,3 +18,7 @@ services:
       - GROUP_ID=${GROUP_ID:?unset}
       # Generate a self-signed certificate if one doesn't exist.
       # To use your own, place them in /config/certs
+      - WEB_AUTHENTICATION
+      - WEB_AUTHENTICATION_USERNAME
+      - WEB_AUTHENTICATION_PASSWORD
+      - OAUTH2_PROXY
