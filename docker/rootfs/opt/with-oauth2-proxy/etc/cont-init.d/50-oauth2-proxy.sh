@@ -64,7 +64,7 @@ set_value_quoted() {
 # Comment out the line containing key.
 comment_out() {
   key="$1"
-  sed -i "s/\(^\s*${key}\s*=.*\)/# \1/" "${CONFIG_FILE}"
+  sed -i "s/\(^\s*${key}\s*=.*\)/#\1/" "${CONFIG_FILE}"
 }
 
 # Comment out the line containing key if the file/directory that it references
@@ -82,10 +82,13 @@ if [ ! -f "${CONFIG_FILE}" ]; then
   cp "${DEFAULT_CONFIG_FILE}" "${CONFIG_FILE}"
 
   # Adjust some config settings.
-  # Banner with app name and version.
+  # Banner with app name and version (if defined).
   # shellcheck disable=SC2154
-  sed -i "s/\(^\s*banner\s*=\).*/\1 \"${APP_NAME} v${APP_VERSION}\"/" \
-    "${CONFIG_FILE}"
+  msg="Login to access your"
+  [ -n "${APP_NAME}" ] && msg="${msg} ${APP_NAME}"
+  [ -n "${APP_VERSION}" ] && msg="${msg} v${APP_VERSION}"
+  msg="${msg} container instance"
+  sed -i "s/\(^\s*banner\s*=\).*/\1 \"${msg}\"/" "${CONFIG_FILE}"
   # Comment out lines referencing files that don't exist.
   comment_out_if_not_exists 'custom_sign_in_logo'
   comment_out_if_not_exists 'custom_templates_dir'
