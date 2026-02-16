@@ -16,7 +16,6 @@ services:
       # Set user/group ID to match host user for volume access to work.
       - USER_ID=${USER_ID:?unset}
       - GROUP_ID=${GROUP_ID:?unset}
-      # Generate a self-signed certificate if one doesn't exist.
       # To use your own, place them in /config/certs
       - WEB_AUTHENTICATION
       - WEB_AUTHENTICATION_USERNAME
