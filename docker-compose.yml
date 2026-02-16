@@ -5,16 +5,16 @@ services:
     container_name: gnucash
     restart: unless-stopped
     ports:
-      - "5800:5800"
-      # Port 5900 is NOT exposed to ensure access is only via the secure web
-      # interface.
+      - "5800:5800" # Secure HTTPS web interface.
     volumes:
       - "${CONFIG_DIR:-./config}:/config:rw"
       - "${DATA_DIR:-./data}:/data:rw"
     environment:
-      - TZ=America/Los_Angeles
-      # Set user/group ID to match host user if needed (optional)
+      - TZ=${TZ:-America/Los_Angeles}
+      # Set user/group ID to match host user for volume access to work.
       - USER_ID=${USER_ID:?unset}
       - GROUP_ID=${GROUP_ID:?unset}
-      # Generate a self-signed certificate if one doesn't exist.
-      # To use your own, place them in /config/certs
+      - WEB_AUTHENTICATION
+      - WEB_AUTHENTICATION_USERNAME
+      - WEB_AUTHENTICATION_PASSWORD
+      - OAUTH2_PROXY
