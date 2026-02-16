@@ -146,8 +146,8 @@ docker run -d \
 >       like window geometries, autosave, and API keys. Copy this file to
 >       `/config/xdg/config/dconf/user`.
 >
->       To inspect the file, use `dconf dump /org/gnucash/` (all settings) or
->       `dconf read /org/gnucash/GnuCash/dialogs/tip-of-the-day/show-at-startup`
+>       To inspect the file, use `dconf dump /org/gnucash/` (all settings) or,
+>       e.g., `dconf read /org/gnucash/GnuCash/dialogs/tip-of-the-day/show-at-startup`
 >       for that specific value. Note that `dconf` is not installed in the
 >       `docker-gnucash` image.
 >
