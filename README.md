@@ -71,7 +71,7 @@ The Docker image is based on
 
 ```bash
 # For DockerHub released image:
-IMAGE=arturklauser/gnucash:v1.1.0
+IMAGE=arturklauser/gnucash:v1.2.0
 
 # For locally built image:
 IMAGE=gnucash
