@@ -2,11 +2,11 @@
 # These args MUST be set on the "docker build" command line.
 # Example:
 #   docker buildx build \
-#     --build-arg BASEIMAGE_VERSION=ubuntu-24.04-v4.10.7 \
+#     --build-arg BASEIMAGE_VERSION=ubuntu-24.04-v4.11.2 \
 #     --build-arg GNUCASH_VERSION=5.14 .
 ARG BASEIMAGE_VERSION=undefined
 ARG GNUCASH_VERSION=undefined
-ARG OAUTH2_PROXY_VERSION=v7.14.2
+ARG OAUTH2_PROXY_VERSION=v7.14.3
 # The following args can optionally be overridden on the command line.
 ARG WITH_DOCS=true
 ARG WITH_FINANCE_QUOTE=true
