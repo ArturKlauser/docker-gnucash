@@ -18,7 +18,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  BASEIMAGE_VERSION: ubuntu-24.04-v4.11.2
+  BASEIMAGE_VERSION: ubuntu-24.04-v4.11.3
   GNUCASH_VERSION: 5.14
   PLATFORMS: linux/amd64,linux/arm64
   DOCKER_IMAGE_NAME: ${{ vars.DOCKERHUB_USERNAME }}/gnucash
