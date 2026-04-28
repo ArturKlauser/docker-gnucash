@@ -27,7 +27,7 @@ The Docker image is based on
 
 ## Features
 
-* **Versions**: Runs GnuCash 5.14 on baseimage-gui:ubuntu-24.04-v4.11.2.
+* **Versions**: Runs GnuCash 5.14 on baseimage-gui:ubuntu-24.04-v4.11.3.
 * **Web Interface**: Access the GnuCash GUI through your web browser.
 * **Secure Access**: Web interface is forced to HTTPS and optionally secured by
   a login page.
@@ -235,7 +235,7 @@ docker run -d \
 To build the image locally:
 ```bash
 docker buildx build \
-  --build-arg BASEIMAGE_VERSION=ubuntu-24.04-v4.11.2 \
+  --build-arg BASEIMAGE_VERSION=ubuntu-24.04-v4.11.3 \
   --build-arg GNUCASH_VERSION=5.14 \
   -t gnucash docker
 ```
