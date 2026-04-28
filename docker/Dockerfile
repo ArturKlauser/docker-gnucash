@@ -6,7 +6,7 @@
 #     --build-arg GNUCASH_VERSION=5.14 .
 ARG BASEIMAGE_VERSION=undefined
 ARG GNUCASH_VERSION=undefined
-ARG OAUTH2_PROXY_VERSION=v7.14.3
+ARG OAUTH2_PROXY_VERSION=v7.15.2
 # The following args can optionally be overridden on the command line.
 ARG WITH_DOCS=true
 ARG WITH_FINANCE_QUOTE=true
