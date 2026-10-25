@@ -142,14 +142,23 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     echo "Installing OAuth2 Proxy ${OAUTH2_PROXY_VERSION}..."
     apt-get install -y --no-install-recommends curl ca-certificates binutils
     case "${TARGETARCH}" in
-      "amd64") ARCH="linux-amd64" ;;
-      "arm64") ARCH="linux-arm64" ;;
+      "amd64")
+        ARCH="linux-amd64"
+        SHA256SUM="d69828e7e586a41e4886e64a29079d3fad8dc4a79ce7dbaa6e365652ccd323f9"
+        ;;
+      "arm64")
+        ARCH="linux-arm64"
+        SHA256SUM="16a076879f7c1f95bf884a346cdc97f687ffc0fa91763257638bf9ab97c51001"
+        ;;
       *)
         echo "Unsupported architecture: ${TARGETARCH}"
         exit 1
         ;;
     esac
     curl -fsSL "https://github.com/oauth2-proxy/oauth2-proxy/releases/download/${OAUTH2_PROXY_VERSION}/oauth2-proxy-${OAUTH2_PROXY_VERSION}.${ARCH}.tar.gz" -o oauth2-proxy.tar.gz
+    # Write to a file to avoid piping and DL4006
+    echo "${SHA256SUM}  oauth2-proxy.tar.gz" > checksum.txt
+    sha256sum -c checksum.txt
     tar -xzf oauth2-proxy.tar.gz
     mv "oauth2-proxy-${OAUTH2_PROXY_VERSION}.${ARCH}/oauth2-proxy" /usr/local/bin/
     rm -rf oauth2-proxy.tar.gz "oauth2-proxy-${OAUTH2_PROXY_VERSION}.${ARCH}"
