@@ -135,7 +135,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     repo='deb http://archive.ubuntu.com/ubuntu/ resolute main universe'
     add-apt-repository -y "${repo}"
     apt-get install -y --no-install-recommends gnucash-docs
-    add-apt-repository --remove -y "${repo}"
+    add-apt-repository --remove --no-update -y "${repo}"
   fi
 
   if [ "${WITH_OAUTH2_PROXY}" = "true" ]; then
