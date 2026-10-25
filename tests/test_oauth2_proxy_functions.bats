@@ -9,6 +9,7 @@ setup_file() {
 
 setup() {
   # Create a dummy config file
+  # shellcheck disable=SC2154
   export CONFIG_FILE="${BATS_TEST_TMPDIR}/oauth2-proxy.cfg"
 
   cat << 'CFG' > "${CONFIG_FILE}"
@@ -27,6 +28,7 @@ CFG
   # Source the functions from the script
   # We need to stub some things because the script has top-level execution
   # which we don't want to run
+  # shellcheck disable=SC1090,SC2312
   source <(sed -n '/^get_value_unquoted()/,/^}/p;/^set_value_quoted()/,/^}/p' docker/rootfs/opt/with-oauth2-proxy/etc/cont-init.d/50-oauth2-proxy.sh)
 }
 
