@@ -58,7 +58,9 @@ get_value_unquoted() {
 set_value_quoted() {
   key="$1"
   value="$2"
-  sed -i "s/\(^\s*${key}\s*=\).*/\1 \"${value}\"/" "${CONFIG_FILE}"
+  # Escape characters that are special in sed replacement
+  value_escaped=$(printf '%s' "${value}" | sed 's|[\\&/]|\\&|g')
+  sed -i "s/\(^\s*${key}\s*=\).*/\1 \"${value_escaped}\"/" "${CONFIG_FILE}"
 }
 
 # Comment out the line containing key.
@@ -88,7 +90,9 @@ if [ ! -f "${CONFIG_FILE}" ]; then
   [ -n "${APP_NAME}" ] && msg="${msg} ${APP_NAME}"
   [ -n "${APP_VERSION}" ] && msg="${msg} v${APP_VERSION}"
   msg="${msg} container instance"
-  sed -i "s/\(^\s*banner\s*=\).*/\1 \"${msg}\"/" "${CONFIG_FILE}"
+  # Escape characters that are special in sed replacement
+  msg_escaped=$(printf '%s' "${msg}" | sed 's|[\\&/]|\\&|g')
+  sed -i "s/\(^\s*banner\s*=\).*/\1 \"${msg_escaped}\"/" "${CONFIG_FILE}"
   # Comment out lines referencing files that don't exist.
   comment_out_if_not_exists 'custom_sign_in_logo'
   comment_out_if_not_exists 'custom_templates_dir'
