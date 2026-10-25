@@ -156,7 +156,9 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
         ;;
     esac
     curl -fsSL "https://github.com/oauth2-proxy/oauth2-proxy/releases/download/${OAUTH2_PROXY_VERSION}/oauth2-proxy-${OAUTH2_PROXY_VERSION}.${ARCH}.tar.gz" -o oauth2-proxy.tar.gz
-    echo "${SHA256SUM}  oauth2-proxy.tar.gz" | sha256sum -c
+    # Write to a file to avoid piping and DL4006
+    echo "${SHA256SUM}  oauth2-proxy.tar.gz" > checksum.txt
+    sha256sum -c checksum.txt
     tar -xzf oauth2-proxy.tar.gz
     mv "oauth2-proxy-${OAUTH2_PROXY_VERSION}.${ARCH}/oauth2-proxy" /usr/local/bin/
     rm -rf oauth2-proxy.tar.gz "oauth2-proxy-${OAUTH2_PROXY_VERSION}.${ARCH}"
