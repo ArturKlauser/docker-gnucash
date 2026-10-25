@@ -3,7 +3,7 @@
 # Example:
 #   docker buildx build \
 #     --build-arg BASEIMAGE_VERSION=ubuntu-24.04-v4.11.3 \
-#     --build-arg GNUCASH_VERSION=5.14 .
+#     --build-arg GNUCASH_VERSION=5.17 .
 ARG BASEIMAGE_VERSION=undefined
 ARG GNUCASH_VERSION=undefined
 ARG OAUTH2_PROXY_VERSION=v7.15.2
