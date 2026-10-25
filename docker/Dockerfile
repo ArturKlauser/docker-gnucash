@@ -70,8 +70,6 @@ ARG TARGETARCH
 
 # Set the name of the application.
 ENV APP_NAME="GnuCash" \
-    APP_VERSION=${GNUCASH_VERSION} \
-    DOCKER_IMAGE_VERSION=${LABEL_VERSION} \
     KEEP_APP_RUNNING=1 \
     SECURE_CONNECTION=1 \
     # Disable external VNC access.
@@ -217,6 +215,9 @@ VOLUME ["/data"]
 # 5900: VNC (We do not expose this by default in documentation, but it's open in
 #       the container)
 EXPOSE 5800
+
+ENV APP_VERSION=${GNUCASH_VERSION} \
+    DOCKER_IMAGE_VERSION=${LABEL_VERSION}
 
 # Metadata.
 LABEL \
