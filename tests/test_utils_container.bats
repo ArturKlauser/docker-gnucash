@@ -1,13 +1,8 @@
 #!/usr/bin/env bats
 
-load utils_common
-load utils_container
+load utils
 
-bats_load_library 'bats-support'
-bats_load_library 'bats-assert'
-bats_load_library 'bats-file'
-
-setup() {
+setup_file() {
   HOST_COM_DIR="$(mktemp -d)"
   export HOST_COM_DIR
   touch "${HOST_COM_DIR}/appready"
@@ -20,7 +15,7 @@ VAR=correct
 APPENV
 }
 
-teardown() {
+teardown_file() {
   rm -rf "${HOST_COM_DIR}"
 }
 
