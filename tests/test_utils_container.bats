@@ -8,7 +8,8 @@ bats_load_library 'bats-assert'
 bats_load_library 'bats-file'
 
 setup() {
-  export HOST_COM_DIR="$(mktemp -d)"
+  HOST_COM_DIR="$(mktemp -d)"
+  export HOST_COM_DIR
   touch "${HOST_COM_DIR}/appready"
   cat << 'APPENV' > "${HOST_COM_DIR}/appenv"
 FOO=bar
