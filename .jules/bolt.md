@@ -1,0 +1,5 @@
+## 2024-05-20 - [Docker Layer Caching Optimization]
+**Learning:** Found a major layer caching optimization in `docker/Dockerfile`. The `ENV` block declares `DOCKER_IMAGE_VERSION=${LABEL_VERSION}` before the huge `apt-get install` block. Since `LABEL_VERSION` changes on every build (derived from branch name or PR number), it invalidates the Docker build cache for the entire `apt-get install` block, forcing a massive, unnecessary rebuild of GnuCash and its dependencies for every new PR or branch commit!
+**Action:** Move the `ENV DOCKER_IMAGE_VERSION=${LABEL_VERSION}` declaration (and potentially others that change frequently) to *after* the heavy `RUN` block. For jlesage/baseimage-gui based images, we should instead use `cont-env.d` static files as per the repository's patterns (noted in AGENTS.md/memory), but wait, the instructions specifically say to use `rootfs/etc/cont-env.d/`. Oh wait, since the `ENV` affects the container runtime, changing it to an ENV further down or writing it dynamically would work. Actually, wait! The `APP_VERSION` and `DOCKER_IMAGE_VERSION` can simply be moved down to just before the `LABEL`!
+
+Let's test splitting the ENV block.
