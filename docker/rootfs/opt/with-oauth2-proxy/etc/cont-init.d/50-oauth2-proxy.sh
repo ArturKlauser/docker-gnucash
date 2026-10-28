@@ -35,12 +35,20 @@ elif [ -z "${WEB_AUTHENTICATION_USERNAME:-}" ] \
   echo "       WEB_AUTHENTICATION_PASSWORD environment variables are set."
   exit 1
 else
+  # Prevent argument injection with htpasswd.
+  case "${WEB_AUTHENTICATION_USERNAME}" in
+    -*)
+      echo "ERROR: Username cannot start with a hyphen (-)."
+      exit 1
+      ;;
+  esac
+
   # Make sure the password db exists and has the right permissions.
   touch "${PASSWORD_FILE}"
   chmod 600 "${PASSWORD_FILE}"
 
   # Add password to database.
-  echo "${WEB_AUTHENTICATION_PASSWORD}" \
+  printf '%s\n' "${WEB_AUTHENTICATION_PASSWORD}" \
     | htpasswd -B -i "${PASSWORD_FILE}" "${WEB_AUTHENTICATION_USERNAME}"
 fi
 
