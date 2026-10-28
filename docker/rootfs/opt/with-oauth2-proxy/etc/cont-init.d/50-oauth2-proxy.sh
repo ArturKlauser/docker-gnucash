@@ -41,8 +41,7 @@ else
       echo "ERROR: Username cannot start with a hyphen (-)."
       exit 1
       ;;
-    *)
-      ;;
+    *) ;;
   esac
 
   # Make sure the password db exists and has the right permissions.
