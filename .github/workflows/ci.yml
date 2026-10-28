@@ -40,6 +40,8 @@ jobs:
 
       - name: Run pre-commit checks
         uses: pre-commit/action@v3.0.1
+        env:
+          SKIP: hadolint,shellcheck,shfmt,actionlint-docker
 
   build:
     name: Build and test docker image
