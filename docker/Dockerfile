@@ -92,6 +92,7 @@ ENV APP_NAME="GnuCash" \
 #         that makes sure GnuCash can start it for displaying its help pages.
 
 # hadolint ignore=DL3008 # Pin versions in apt-get install
+# hadolint ignore=DL3015 # Avoid additional packages by specifying `--no-install-recommends`
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt/lists,sharing=locked \
     <<EO_RUN
@@ -100,7 +101,9 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
   # the cache.
   rm -f /etc/apt/apt.conf.d/docker-clean
   apt-get update
-  apt-get install -y --no-install-recommends software-properties-common
+  # Install common dependencies needed for repository management and locales
+  # early. Batching these saves overhead compared to separate apt-get calls.
+  apt-get install -y --no-install-recommends software-properties-common locales
   if [ "${USE_GNUCASH_PPA}" = "true" ]; then
     # Use Gnucash from its PPA repo.
     add-apt-repository -y ppa:gnucash/ppa
@@ -109,7 +112,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     # This increases the image size by ~90 MB vs. the PPA version.
     add-apt-repository -y "deb http://archive.ubuntu.com/ubuntu/ questing main restricted universe multiverse"
   fi
-  apt-get install -y --no-install-recommends locales
+
   locale-gen en_US.UTF-8
   # Enable installation of GnuCash documentation.
   #   - This isn't necessary if we use Yelp, since it depends on the .xml
@@ -123,13 +126,20 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
   if [ "${WITH_FINANCE_QUOTE}" = "true" ]; then
     PACKAGES="${PACKAGES} libfinance-quote-perl"
   fi
+  if [ "${WITH_DOCS}" = "true" ]; then
+    PACKAGES="${PACKAGES} yelp"
+  fi
+  if [ "${WITH_OAUTH2_PROXY}" = "true" ]; then
+    PACKAGES="${PACKAGES} curl ca-certificates binutils"
+  fi
+
   # shellcheck disable=SC2086 # Ignore word splitting for ${PACKAGES}
   apt-get install -y --no-install-recommends ${PACKAGES}
-  if [ "${WITH_DOCS}" = "true" ]; then
-    apt-get install -y --no-install-recommends yelp
 
+  if [ "${WITH_DOCS}" = "true" ]; then
     # The newest version of gnucash-docs is only available in the newer
     # Ubuntu "resolute" (to be 26.04) repo. Temporarily add it.
+    # Note: done after main installation to prevent accidental upgrades from this repo.
     repo='deb http://archive.ubuntu.com/ubuntu/ resolute main universe'
     add-apt-repository -y "${repo}"
     apt-get install -y --no-install-recommends gnucash-docs
@@ -138,7 +148,6 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
 
   if [ "${WITH_OAUTH2_PROXY}" = "true" ]; then
     echo "Installing OAuth2 Proxy ${OAUTH2_PROXY_VERSION}..."
-    apt-get install -y --no-install-recommends curl ca-certificates binutils
     case "${TARGETARCH}" in
       "amd64")
         ARCH="linux-amd64"

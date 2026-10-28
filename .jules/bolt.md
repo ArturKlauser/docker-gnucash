@@ -3,3 +3,7 @@
 **Action:** Move the `ENV DOCKER_IMAGE_VERSION=${LABEL_VERSION}` declaration (and potentially others that change frequently) to *after* the heavy `RUN` block. For jlesage/baseimage-gui based images, we should instead use `cont-env.d` static files as per the repository's patterns (noted in AGENTS.md/memory), but wait, the instructions specifically say to use `rootfs/etc/cont-env.d/`. Oh wait, since the `ENV` affects the container runtime, changing it to an ENV further down or writing it dynamically would work. Actually, wait! The `APP_VERSION` and `DOCKER_IMAGE_VERSION` can simply be moved down to just before the `LABEL`!
 
 Let's test splitting the ENV block.
+
+## 2024-05-20 - [Batching apt-get Commands for QEMU Emulation Mitigation]
+**Learning:** Found that executing multiple `apt-get install` commands inside a single Docker `RUN` instruction has severe performance penalties in multi-architecture builds (especially `arm64` emulated via QEMU). Each separate `apt-get` command re-acquires locks and re-parses metadata, which is highly I/O bound. The overhead of this under QEMU emulation scales drastically, increasing overall build times for GitHub Actions CI/CD workflows significantly.
+**Action:** When building multi-architecture Docker images, batch as many package installations as possible into a single `apt-get install` command by dynamically composing a space-separated string of package names based on active build arguments/conditions. This minimizes QEMU file I/O operations and optimizes build performance without disrupting functionality.
