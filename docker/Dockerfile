@@ -91,8 +91,7 @@ ENV APP_NAME="GnuCash" \
 #         defaults config file separately in rootfs/etc/xdg/mimeapps.list
 #         that makes sure GnuCash can start it for displaying its help pages.
 
-# DL3008: Pin versions in apt-get install
-# hadolint ignore=DL3008
+# hadolint ignore=DL3008 # Pin versions in apt-get install
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt/lists,sharing=locked \
     <<EO_RUN
