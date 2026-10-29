@@ -81,7 +81,7 @@ wait_for_container_daemon() {
   timeout=120
   for countdown in $(eval "echo {${timeout}..0}"); do
     [[ -f ${HOST_COM_DIR}/appready ]] && break
-    ((timeout % 10 == 0)) && echo "waiting ${countdown}..."
+    ((countdown % 10 == 0)) && echo "waiting ${countdown}..."
     sleep 1
   done
 
