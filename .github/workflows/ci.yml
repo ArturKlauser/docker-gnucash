@@ -48,8 +48,10 @@ jobs:
       - name: Set up pre-commit cache
         uses: actions/cache@v6
         with:
-          path: ~/.cache/pre-commit
-          key: pre-commit-3|${{ env.pythonLocation }}|${{ hashFiles('.pre-commit-config.yaml') }}
+          path: |
+            ~/.cache/pre-commit
+            ~/.cache/pip
+          key: pre-commit-3|${{ env.pythonLocation }}_${{ runner.os }}-${{ runner.arch }}|${{ hashFiles('.pre-commit-config.yaml') }}
 
       - name: Run pre-commit checks
         run: |
