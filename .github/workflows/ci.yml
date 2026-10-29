@@ -17,6 +17,10 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.ref_name }}
   cancel-in-progress: true
 
+defaults:
+  run:
+    shell: bash
+
 env:
   BASEIMAGE_VERSION: ubuntu-24.04-v4.11.3
   GNUCASH_VERSION: 5.17
@@ -106,8 +110,8 @@ jobs:
             # For PRs, we want to read from the main branch cache and the PR's
             # own cache, but only write to the PR's cache.
             CLEAN_REF=$(sanitize "$HEAD_REF")
-            CACHE_FROM="type=registry,ref=${CACHE_IMAGE}:${CLEAN_REF}
-            type=registry,ref=${CACHE_IMAGE}:main"
+            CACHE_FROM="type=registry,ref=${CACHE_IMAGE}:${CLEAN_REF}"
+            CACHE_FROM+=$'\n'"type=registry,ref=${CACHE_IMAGE}:main"
             CACHE_TO="type=registry,ref=${CACHE_IMAGE}:${CLEAN_REF}"
             CACHE_TO="${CACHE_TO},mode=max"
 
@@ -126,8 +130,8 @@ jobs:
             if [ -n "$PR_BRANCH" ] && [ "$PR_BRANCH" != "null" ]; then
               echo "Found PR source branch: $PR_BRANCH"
               CLEAN_REF=$(sanitize "$PR_BRANCH")
-              CACHE_FROM="type=registry,ref=${CACHE_IMAGE}:${CLEAN_REF}
-              ${CACHE_FROM}"
+              CACHE_FROM_PREPEND="type=registry,ref=${CACHE_IMAGE}:${CLEAN_REF}"
+              CACHE_FROM="${CACHE_FROM_PREPEND}"$'\n'"${CACHE_FROM}"
             fi
 
           elif [[ $GITHUB_REF == refs/heads/* ]]; then
@@ -135,8 +139,8 @@ jobs:
             # branch cache.
             REF_NAME=${GITHUB_REF#refs/heads/}
             CLEAN_REF=$(sanitize "$REF_NAME")
-            CACHE_FROM="type=registry,ref=${CACHE_IMAGE}:${CLEAN_REF}
-            type=registry,ref=${CACHE_IMAGE}:main"
+            CACHE_FROM="type=registry,ref=${CACHE_IMAGE}:${CLEAN_REF}"
+            CACHE_FROM+=$'\n'"type=registry,ref=${CACHE_IMAGE}:main"
             CACHE_TO="type=registry,ref=${CACHE_IMAGE}:${CLEAN_REF}"
             CACHE_TO="${CACHE_TO},mode=max"
 
