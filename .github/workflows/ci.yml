@@ -38,8 +38,20 @@ jobs:
         with:
           python-version: 3.14
 
+      # This is basically a copy of pre-commit/action@3.01.
+      # The maintainer there refuses to accept PRs that would upgrade
+      # actions/cache@vX X>4 and that causes "Node.js 20" deprecation warnings.
+      - name: Set up pre-commit cache
+        uses: actions/cache@v6
+        with:
+          path: ~/.cache/pre-commit
+          key: pre-commit-3|${{ env.pythonLocation }}|${{ hashFiles('.pre-commit-config.yaml') }}
+
       - name: Run pre-commit checks
-        uses: pre-commit/action@v3.0.1
+        run: |
+          python -m pip install pre-commit
+          python -m pip freeze --local
+          pre-commit run --all-files --show-diff-on-failure --color=always
 
   build:
     name: Build and test docker image
