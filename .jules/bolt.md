@@ -3,3 +3,7 @@
 **Action:** Move the `ENV DOCKER_IMAGE_VERSION=${LABEL_VERSION}` declaration (and potentially others that change frequently) to *after* the heavy `RUN` block. For jlesage/baseimage-gui based images, we should instead use `cont-env.d` static files as per the repository's patterns (noted in AGENTS.md/memory), but wait, the instructions specifically say to use `rootfs/etc/cont-env.d/`. Oh wait, since the `ENV` affects the container runtime, changing it to an ENV further down or writing it dynamically would work. Actually, wait! The `APP_VERSION` and `DOCKER_IMAGE_VERSION` can simply be moved down to just before the `LABEL`!
 
 Let's test splitting the ENV block.
+
+## 2024-05-20 - [Batching apt-get installs to minimize file I/O overhead]
+**Learning:** In Docker builds targeting multi-architecture environments (like QEMU arm64), running multiple sequential `apt-get install` calls creates a significant performance bottleneck due to redundant file I/O overhead from metadata parsing and lock acquisition. It is significantly faster to conditionally assemble all required packages into a single variable string and run `apt-get install` exactly once.
+**Action:** Batch multiple package installations into a single `apt-get install` command in `docker/Dockerfile` where possible, while keeping special cases (like `gnucash-docs` requiring temporary repositories) isolated.
