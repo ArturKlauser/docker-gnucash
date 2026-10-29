@@ -139,6 +139,8 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     # The newest version of gnucash-docs is only available in the newer
     # Ubuntu "resolute" (to be 26.04) repo. Temporarily add it.
     # Note: done after main installation to prevent accidental upgrades from this repo.
+    # We use a custom .list file and targeted apt-get update to avoid the massive overhead
+    # of a full apt-get update across all configured repositories which add-apt-repository triggers.
     echo 'deb http://archive.ubuntu.com/ubuntu/ resolute main universe' > /etc/apt/sources.list.d/resolute.list
     apt-get update -o Dir::Etc::sourcelist="/etc/apt/sources.list.d/resolute.list" \
       -o Dir::Etc::sourceparts="/dev/null" -o APT::Get::List-Cleanup="0"

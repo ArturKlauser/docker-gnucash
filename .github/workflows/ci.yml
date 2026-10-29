@@ -51,7 +51,7 @@ jobs:
           path: |
             ~/.cache/pre-commit
             ~/.cache/pip
-          key: pre-commit-3|${{ env.pythonLocation }}|${{ hashFiles('.pre-commit-config.yaml') }}
+          key: pre-commit-3|${{ env.pythonLocation }}_${{ runner.os }}-${{ runner.arch }}|${{ hashFiles('.pre-commit-config.yaml') }}
 
       - name: Run pre-commit checks
         run: |
