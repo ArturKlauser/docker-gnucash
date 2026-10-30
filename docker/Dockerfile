@@ -105,11 +105,15 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
   apt-get install -y --no-install-recommends software-properties-common locales
   if [ "${USE_GNUCASH_PPA}" = "true" ]; then
     # Use Gnucash from its PPA repo.
-    add-apt-repository -y ppa:gnucash/ppa
+    add-apt-repository -y --no-update ppa:gnucash/ppa
+    apt-get update -o Dir::Etc::sourcelist="/etc/apt/sources.list.d/gnucash-ubuntu-ppa-noble.sources" \
+      -o Dir::Etc::sourceparts="/dev/null" -o APT::Get::List-Cleanup="0"
   else
     # Use Gnucash from Ubuntu 25.10 (questing) repo.
     # This increases the image size by ~90 MB vs. the PPA version.
-    add-apt-repository -y "deb http://archive.ubuntu.com/ubuntu/ questing main restricted universe multiverse"
+    echo 'deb http://archive.ubuntu.com/ubuntu/ questing main restricted universe multiverse' > /etc/apt/sources.list.d/questing.list
+    apt-get update -o Dir::Etc::sourcelist="/etc/apt/sources.list.d/questing.list" \
+      -o Dir::Etc::sourceparts="/dev/null" -o APT::Get::List-Cleanup="0"
   fi
 
   locale-gen en_US.UTF-8
