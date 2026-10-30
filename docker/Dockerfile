@@ -105,11 +105,22 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
   apt-get install -y --no-install-recommends software-properties-common locales
   if [ "${USE_GNUCASH_PPA}" = "true" ]; then
     # Use Gnucash from its PPA repo.
-    add-apt-repository -y ppa:gnucash/ppa
+    # We use add-apt-repository with --no-update and a targeted apt-get update
+    # to avoid the massive overhead of a full apt-get update across all configured
+    # repositories. We can't easily write the list file directly because
+    # add-apt-repository also automatically handles fetching and installing the PPA's GPG key.
+    add-apt-repository -y --no-update ppa:gnucash/ppa
+    apt-get update -o Dir::Etc::sourcelist="/etc/apt/sources.list.d/gnucash-ubuntu-ppa-noble.sources" \
+      -o Dir::Etc::sourceparts="/dev/null" -o APT::Get::List-Cleanup="0"
   else
     # Use Gnucash from Ubuntu 25.10 (questing) repo.
     # This increases the image size by ~90 MB vs. the PPA version.
-    add-apt-repository -y "deb http://archive.ubuntu.com/ubuntu/ questing main restricted universe multiverse"
+    # We manually write the .list file and use a targeted apt-get update instead of
+    # add-apt-repository because it completely avoids the overhead of add-apt-repository's
+    # python dependencies and implicit full update checks, which is especially slow under QEMU.
+    echo 'deb http://archive.ubuntu.com/ubuntu/ questing main restricted universe multiverse' > /etc/apt/sources.list.d/questing.list
+    apt-get update -o Dir::Etc::sourcelist="/etc/apt/sources.list.d/questing.list" \
+      -o Dir::Etc::sourceparts="/dev/null" -o APT::Get::List-Cleanup="0"
   fi
 
   locale-gen en_US.UTF-8
