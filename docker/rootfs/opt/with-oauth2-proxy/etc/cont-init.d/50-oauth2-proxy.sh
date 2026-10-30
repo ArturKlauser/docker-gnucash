@@ -41,6 +41,10 @@ else
       echo "ERROR: Username cannot start with a hyphen (-)."
       exit 1
       ;;
+    *:*)
+      echo "ERROR: Username cannot contain a colon (:)."
+      exit 1
+      ;;
     *) ;;
   esac
 
@@ -68,7 +72,7 @@ set_value_quoted() {
   key="$1"
   value="$2"
   # Escape characters that are special in sed replacement
-  value_escaped=$(printf '%s' "${value}" | sed 's|[\\&/]|\\&|g')
+  value_escaped=$(printf '%s' "${value}" | sed 's/"/\\"/g' | sed 's|[\\&/]|\\&|g')
   sed -i "s/\(^\s*${key}\s*=\).*/\1 \"${value_escaped}\"/" "${CONFIG_FILE}"
 }
 
@@ -100,7 +104,7 @@ if [ ! -f "${CONFIG_FILE}" ]; then
   [ -n "${APP_VERSION}" ] && msg="${msg} v${APP_VERSION}"
   msg="${msg} container instance"
   # Escape characters that are special in sed replacement
-  msg_escaped=$(printf '%s' "${msg}" | sed 's|[\\&/]|\\&|g')
+  msg_escaped=$(printf '%s' "${msg}" | sed 's/"/\\"/g' | sed 's|[\\&/]|\\&|g')
   sed -i "s/\(^\s*banner\s*=\).*/\1 \"${msg_escaped}\"/" "${CONFIG_FILE}"
   # Comment out lines referencing files that don't exist.
   comment_out_if_not_exists 'custom_sign_in_logo'
