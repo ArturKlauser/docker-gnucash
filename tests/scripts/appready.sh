@@ -39,6 +39,6 @@ fi
 # Create a shell script that sets the environment like the app has it. Make
 # sure this correctly handles embedded white space by quoting env values.
 echo "env -i" > "${CONTAINER_COM_DIR}/appenv.sh"
-sed -e 's/^/export "/;s/$/"/' "${CONTAINER_COM_DIR}/appenv" \
+sed -e "s/'/'\\\\''/g" -e "s/^/export '/;s/$/'/" "${CONTAINER_COM_DIR}/appenv" \
   >> "${CONTAINER_COM_DIR}/appenv.sh"
 touch "${CONTAINER_COM_DIR}/appready"
