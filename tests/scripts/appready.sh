@@ -39,6 +39,9 @@ fi
 # Create a shell script that sets the environment like the app has it. Make
 # sure this correctly handles embedded white space by quoting env values.
 echo "env -i" > "${CONTAINER_COM_DIR}/appenv.sh"
+# Protect against command injection in environment variables by escaping
+# existing single quotes and wrapping the entire value in single quotes.
+# e.g. VULNERABLE=`echo INJECTED` becomes export 'VULNERABLE=`echo INJECTED`'
 sed -e "s/'/'\\\\''/g" -e "s/^/export '/;s/$/'/" "${CONTAINER_COM_DIR}/appenv" \
   >> "${CONTAINER_COM_DIR}/appenv.sh"
 touch "${CONTAINER_COM_DIR}/appready"
