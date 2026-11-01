@@ -78,11 +78,11 @@ getlog_container_daemon() {
 
 wait_for_container_daemon() {
   echo "Waiting for the docker container daemon to be ready..."
-  timeout=120
+  timeout=1200
   for countdown in $(eval "echo {${timeout}..0}"); do
     [[ -f ${HOST_COM_DIR}/appready ]] && break
-    ((countdown % 10 == 0)) && echo "waiting ${countdown}..."
-    sleep 1
+    ((countdown % 100 == 0)) && echo "waiting ${countdown}..."
+    sleep 0.1
   done
 
   if [[ ${countdown} -ne 0 ]]; then
