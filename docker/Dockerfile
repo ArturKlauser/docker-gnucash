@@ -52,6 +52,39 @@ COPY --from=icons-build /opt/noVNC/app/images/icons /icons
 ARG BUILDPLATFORM
 FROM --platform=$BUILDPLATFORM ${ICONS_IMAGE} AS icons-provider
 
+# Download oauth2-proxy (runs natively on build platform).
+# We do this in a separate stage to allow parallel downloading and to avoid
+# QEMU network and I/O emulation overhead on multi-architecture builds.
+FROM --platform=$BUILDPLATFORM alpine:3.21 AS oauth2-proxy-downloader
+ARG OAUTH2_PROXY_VERSION
+ARG TARGETARCH
+# hadolint ignore=DL3018
+RUN --mount=type=cache,target=/var/cache/apk <<EO_RUN
+  set -ex
+  apk add --update curl
+  echo "Downloading OAuth2 Proxy ${OAUTH2_PROXY_VERSION}..."
+  case "${TARGETARCH}" in
+    "amd64")
+      ARCH="linux-amd64"
+      SHA256SUM="d69828e7e586a41e4886e64a29079d3fad8dc4a79ce7dbaa6e365652ccd323f9"
+      ;;
+    "arm64")
+      ARCH="linux-arm64"
+      SHA256SUM="16a076879f7c1f95bf884a346cdc97f687ffc0fa91763257638bf9ab97c51001"
+      ;;
+    *)
+      echo "Unsupported architecture: ${TARGETARCH}"
+      exit 1
+      ;;
+  esac
+  curl -fsSL "https://github.com/oauth2-proxy/oauth2-proxy/releases/download/${OAUTH2_PROXY_VERSION}/oauth2-proxy-${OAUTH2_PROXY_VERSION}.${ARCH}.tar.gz" -o oauth2-proxy.tar.gz
+  echo "${SHA256SUM}  oauth2-proxy.tar.gz" > checksum.txt
+  sha256sum -c checksum.txt
+  tar -xzf oauth2-proxy.tar.gz
+  mkdir -p /out
+  mv "oauth2-proxy-${OAUTH2_PROXY_VERSION}.${ARCH}/oauth2-proxy" /out/
+EO_RUN
+
 # Build main image.
 FROM jlesage/baseimage-gui:${BASEIMAGE_VERSION} AS main-image-build
 
@@ -94,6 +127,7 @@ ENV APP_NAME="GnuCash" \
 # hadolint ignore=DL3008 # Pin versions in apt-get install
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt/lists,sharing=locked \
+    --mount=type=bind,from=oauth2-proxy-downloader,source=/out,target=/mnt/oauth2-proxy \
     <<EO_RUN
   set -ex
   # Delete the docker-clean configuration to ensure .deb files are persisted in
@@ -140,7 +174,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     PACKAGES="${PACKAGES} yelp"
   fi
   if [ "${WITH_OAUTH2_PROXY}" = "true" ]; then
-    PACKAGES="${PACKAGES} curl ca-certificates binutils"
+    PACKAGES="${PACKAGES} binutils"
   fi
 
   # shellcheck disable=SC2086 # Ignore word splitting for ${PACKAGES}
@@ -161,30 +195,10 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
 
   if [ "${WITH_OAUTH2_PROXY}" = "true" ]; then
     echo "Installing OAuth2 Proxy ${OAUTH2_PROXY_VERSION}..."
-    case "${TARGETARCH}" in
-      "amd64")
-        ARCH="linux-amd64"
-        SHA256SUM="d69828e7e586a41e4886e64a29079d3fad8dc4a79ce7dbaa6e365652ccd323f9"
-        ;;
-      "arm64")
-        ARCH="linux-arm64"
-        SHA256SUM="16a076879f7c1f95bf884a346cdc97f687ffc0fa91763257638bf9ab97c51001"
-        ;;
-      *)
-        echo "Unsupported architecture: ${TARGETARCH}"
-        exit 1
-        ;;
-    esac
-    curl -fsSL "https://github.com/oauth2-proxy/oauth2-proxy/releases/download/${OAUTH2_PROXY_VERSION}/oauth2-proxy-${OAUTH2_PROXY_VERSION}.${ARCH}.tar.gz" -o oauth2-proxy.tar.gz
-    # Write to a file to avoid piping and DL4006
-    echo "${SHA256SUM}  oauth2-proxy.tar.gz" > checksum.txt
-    sha256sum -c checksum.txt
-    tar -xzf oauth2-proxy.tar.gz
-    mv "oauth2-proxy-${OAUTH2_PROXY_VERSION}.${ARCH}/oauth2-proxy" /usr/local/bin/
-    rm -rf oauth2-proxy.tar.gz "oauth2-proxy-${OAUTH2_PROXY_VERSION}.${ARCH}"
+    cp /mnt/oauth2-proxy/oauth2-proxy /usr/local/bin/
     strip /usr/local/bin/oauth2-proxy
     chmod +x /usr/local/bin/oauth2-proxy
-    apt-get purge -y --auto-remove curl binutils
+    apt-get purge -y --auto-remove binutils
   fi
 
   apt-get remove -y software-properties-common
