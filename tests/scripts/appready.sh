@@ -13,16 +13,19 @@ log="${CONTAINER_COM_DIR}/log"
 : > "${log}" # Start appready debugging log.
 echo "waiting for gnucash pid" >> "${log}"
 # Give app run script some time to exec the gnucash process.
-for countdown in {100..0}; do
+for iter in {100..0}; do
   # Only care about gnucash child process of PID 1 (init),
   # not other random gnucash invocations from parallel tests.
   gnucash_pid=$(pgrep -P 1 gnucash)
-  echo "waiting ${countdown}; pid=${gnucash_pid}" >> "${log}"
+  if (( iter % 10 == 0 )); then
+    countdown=$((iter / 10))
+    echo "waiting ${countdown}; pid=${gnucash_pid}" >> "${log}"
+  fi
   [[ -n "${gnucash_pid}" ]] && break
   sleep 0.1
 done
 
-if [[ ${countdown} -eq 0 ]]; then
+if [[ ${iter} -eq 0 ]]; then
   echo "Docker gnucash app startup wait timeout." >> "${log}"
   echo "Docker gnucash app startup wait timeout." \
     > "${CONTAINER_COM_DIR}/appenv"
