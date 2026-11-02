@@ -23,7 +23,6 @@ for iter in $(eval "echo {$((timeout_sec * sec_fractions))..0}"); do
   gnucash_pid=$(pgrep -P 1 gnucash)
   if ((iter % sec_fractions == 0)); then
     countdown=$((iter / sec_fractions))
-    countdown="${countdown%%.*}" # Ensure integer
     echo "waiting ${countdown}; pid=${gnucash_pid}" >> "${log}"
   fi
   [[ -n "${gnucash_pid}" ]] && break
