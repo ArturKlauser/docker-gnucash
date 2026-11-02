@@ -85,6 +85,7 @@ wait_for_container_daemon() {
     [[ -f ${HOST_COM_DIR}/appready ]] && break
     if ((iter % sec_fractions == 0)); then
       countdown=$((iter / sec_fractions))
+      countdown="${countdown%%.*}" # Ensure integer
       ((countdown % 10 == 0)) && echo "waiting ${countdown}..."
     fi
     sleep "${sleep_time}"
