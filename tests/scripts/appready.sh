@@ -12,17 +12,21 @@ log="${CONTAINER_COM_DIR}/log"
 
 : > "${log}" # Start appready debugging log.
 echo "waiting for gnucash pid" >> "${log}"
+timeout_sec=10
+sec_fractions=10
+sleep_time=$(awk "BEGIN {print 1/$sec_fractions}")
+
 # Give app run script some time to exec the gnucash process.
-for iter in {100..0}; do
+for iter in $(eval "echo {$((timeout_sec * sec_fractions))..0}"); do
   # Only care about gnucash child process of PID 1 (init),
   # not other random gnucash invocations from parallel tests.
   gnucash_pid=$(pgrep -P 1 gnucash)
-  if ((iter % 10 == 0)); then
-    countdown=$((iter / 10))
+  if ((iter % sec_fractions == 0)); then
+    countdown=$((iter / sec_fractions))
     echo "waiting ${countdown}; pid=${gnucash_pid}" >> "${log}"
   fi
   [[ -n "${gnucash_pid}" ]] && break
-  sleep 0.1
+  sleep "${sleep_time}"
 done
 
 if [[ ${iter} -eq 0 ]]; then
