@@ -17,7 +17,7 @@ for iter in {100..0}; do
   # Only care about gnucash child process of PID 1 (init),
   # not other random gnucash invocations from parallel tests.
   gnucash_pid=$(pgrep -P 1 gnucash)
-  if (( iter % 10 == 0 )); then
+  if ((iter % 10 == 0)); then
     countdown=$((iter / 10))
     echo "waiting ${countdown}; pid=${gnucash_pid}" >> "${log}"
   fi
