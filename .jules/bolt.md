@@ -9,3 +9,9 @@
 ## 2024-05-21 - [Optimizing add-apt-repository in Docker builds]
 **Learning:** The `add-apt-repository` command implicitly triggers a full `apt-get update` across *all* configured repositories by default. In a multi-architecture Docker build (especially under QEMU for arm64), this causes severe I/O overhead and drastically slows down the build.
 **Action:** Always append `--no-update` when using `add-apt-repository`, and follow it with a targeted update (e.g., using `-o Dir::Etc::sourcelist=... -o APT::Get::List-Cleanup=0`) for only the newly added repository to prevent unnecessary metadata fetches. Alternatively, manually create the `.list` file directly to bypass `add-apt-repository` altogether.
+
+## 2024-05-22 - [Optimizing apk add and package removals in multi-stage multi-architecture builds]
+**Learning:** Found two small but impactful optimizations in `docker/Dockerfile`:
+1. In the `oauth2-proxy-downloader` Alpine stage, we were unnecessarily installing `curl` via `apk add` just to download a file. Replacing it with Alpine's built-in `wget -qO` skips network IO, lock acquisition, and package parsing.
+2. In the multi-architecture main build stage, multiple `apt-get` commands (like removing/purging `binutils` and `software-properties-common`) were run sequentially. In QEMU environments, each invocation has massive DB locking/re-parsing overhead.
+**Action:** Use Alpine's built-in `wget` instead of installing `curl`. Batch package removals into a single dynamic `apt-get purge -y --auto-remove` command instead of separate `purge`/`remove`/`autoremove` calls.

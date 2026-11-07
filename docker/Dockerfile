@@ -58,10 +58,8 @@ FROM --platform=$BUILDPLATFORM ${ICONS_IMAGE} AS icons-provider
 FROM --platform=$BUILDPLATFORM alpine:3.21 AS oauth2-proxy-downloader
 ARG OAUTH2_PROXY_VERSION
 ARG TARGETARCH
-# hadolint ignore=DL3018
-RUN --mount=type=cache,target=/var/cache/apk <<EO_RUN
+RUN <<EO_RUN
   set -ex
-  apk add --update curl
   echo "Downloading OAuth2 Proxy ${OAUTH2_PROXY_VERSION}..."
   case "${TARGETARCH}" in
     "amd64")
@@ -77,7 +75,7 @@ RUN --mount=type=cache,target=/var/cache/apk <<EO_RUN
       exit 1
       ;;
   esac
-  curl -fsSL "https://github.com/oauth2-proxy/oauth2-proxy/releases/download/${OAUTH2_PROXY_VERSION}/oauth2-proxy-${OAUTH2_PROXY_VERSION}.${ARCH}.tar.gz" -o oauth2-proxy.tar.gz
+  wget -qO oauth2-proxy.tar.gz "https://github.com/oauth2-proxy/oauth2-proxy/releases/download/${OAUTH2_PROXY_VERSION}/oauth2-proxy-${OAUTH2_PROXY_VERSION}.${ARCH}.tar.gz"
   echo "${SHA256SUM}  oauth2-proxy.tar.gz" > checksum.txt
   sha256sum -c checksum.txt
   tar -xzf oauth2-proxy.tar.gz
@@ -193,16 +191,17 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     rm -f /etc/apt/sources.list.d/resolute.list
   fi
 
+  PURGE_PACKAGES=""
   if [ "${WITH_OAUTH2_PROXY}" = "true" ]; then
     echo "Installing OAuth2 Proxy ${OAUTH2_PROXY_VERSION}..."
     cp /mnt/oauth2-proxy/oauth2-proxy /usr/local/bin/
     strip /usr/local/bin/oauth2-proxy
     chmod +x /usr/local/bin/oauth2-proxy
-    apt-get purge -y --auto-remove binutils
+    PURGE_PACKAGES="binutils"
   fi
 
-  apt-get remove -y software-properties-common
-  apt-get autoremove -y
+  # shellcheck disable=SC2086 # Ignore word splitting for ${PURGE_PACKAGES}
+  apt-get purge -y --auto-remove software-properties-common ${PURGE_PACKAGES}
 EO_RUN
 
 # Helpers for image debugging.
