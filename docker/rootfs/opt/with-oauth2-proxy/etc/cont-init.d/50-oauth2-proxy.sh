@@ -95,6 +95,8 @@ comment_out_if_not_exists() {
 if [ ! -f "${CONFIG_FILE}" ]; then
   echo "Creating default oauth2-proxy configuration..."
   cp "${DEFAULT_CONFIG_FILE}" "${CONFIG_FILE}"
+  chown "${USER_ID:-app}:${GROUP_ID:-app}" "${CONFIG_FILE}" || true
+  chmod 600 "${CONFIG_FILE}"
 
   # Adjust some config settings.
   # Banner with app name and version (if defined).
