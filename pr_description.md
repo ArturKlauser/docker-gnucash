@@ -1,0 +1,5 @@
+🚨 Severity: MEDIUM
+💡 Vulnerability: The OAuth2 Proxy configuration file (`/config/oauth2-proxy.cfg`) was created from a default template without restricting its file permissions.
+🎯 Impact: Because it contains sensitive data like `cookie_secret` and user-provided `client_secret` variables, storing it with world-readable default permissions (e.g., `644`) presents an information disclosure risk. Unprivileged users or other containers with access to the volume could read the secrets.
+🔧 Fix: Added explicit restrictive permissions (`chmod 600`) immediately after creating the configuration file. Also added `chown "${USER_ID:-app}:${GROUP_ID:-app}"` so the host user can still access the mapped volume file, while the `root` oauth2-proxy process can also read it.
+✅ Verification: Build the image with `OAUTH2_PROXY` enabled and start the container without an existing config file. Verify inside the container that `ls -l /config/oauth2-proxy.cfg` shows `-rw-------` and the correct mapped user ownership.
