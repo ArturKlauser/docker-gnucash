@@ -17,7 +17,7 @@ sec_fractions=10
 sleep_time="0.1"
 
 # Give app run script some time to exec the gnucash process.
-for ((iter=timeout_sec * sec_fractions; iter>=0; iter--)); do
+for ((iter = timeout_sec * sec_fractions; iter >= 0; iter--)); do
   # Only care about gnucash child process of PID 1 (init),
   # not other random gnucash invocations from parallel tests.
   gnucash_pid=$(pgrep -P 1 gnucash)
