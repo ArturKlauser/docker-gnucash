@@ -10,10 +10,10 @@
 **Learning:** The `add-apt-repository` command implicitly triggers a full `apt-get update` across *all* configured repositories by default. In a multi-architecture Docker build (especially under QEMU for arm64), this causes severe I/O overhead and drastically slows down the build.
 **Action:** Always append `--no-update` when using `add-apt-repository`, and follow it with a targeted update (e.g., using `-o Dir::Etc::sourcelist=... -o APT::Get::List-Cleanup=0`) for only the newly added repository to prevent unnecessary metadata fetches. Alternatively, manually create the `.list` file directly to bypass `add-apt-repository` altogether.
 
-## 2024-05-22 - [Replacing bash 'eval echo' loops with C-style loops for performance]
+## 2026-02-20 - [Replacing bash 'eval echo' loops with C-style loops for performance]
 **Learning:** Found that using `for iter in $(eval "echo {$((val))..0}"); do` for polling loops is very slow because it initiates a subshell and evaluates a string, which can cause significant execution time overhead.
 **Action:** In pure Bash scripts, avoid `eval echo` or `seq` by using a C-style `for` loop `for (( iter=val; iter>=0; iter-- )); do`. It is entirely built-in, runs instantly, and saves unnecessary subshell spawns.
 
-## 2024-05-22 - [Reducing apt-get footprint by offloading binary tools to Alpine stages]
-**Learning:** Sometimes small tools like `strip` (from `binutils`) are needed to reduce binary sizes downloaded in a multi-stage Docker build. Installing `binutils` via `apt-get` in a heavy Ubuntu image has far more I/O and time overhead than installing it via `apk add` in a lightweight Alpine stage.
-**Action:** Whenever a binary requires operations like `strip` before being deployed, perform these operations in the isolated Alpine downloader/builder stages instead of the final Ubuntu stage. This eliminates `apt-get` installation/purging delays in the final image build process.
+## 2026-02-20 - [Cross-architecture tool failures in Docker multi-stage builds]
+**Learning:** Attempted to optimize build speed by offloading `strip` operations (via `binutils`) to an Alpine download stage instead of the main Ubuntu stage. This surprisingly FAILED during multi-architecture builds. Since the Alpine stage runs natively on the build platform (`amd64`), its `strip` tool cannot process binaries downloaded for the `arm64` target architecture, causing the build to crash.
+**Action:** When working with cross-compiled or multi-architecture binaries (like `oauth2-proxy`), architecture-specific operations like `strip` MUST be performed in the target architecture's stage (the main `main-image-build` Ubuntu stage), even if it incurs a slight `apt-get` performance penalty, because the target stage's tools will correctly handle the architecture under emulation.
