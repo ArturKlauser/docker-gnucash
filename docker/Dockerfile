@@ -58,8 +58,10 @@ FROM --platform=$BUILDPLATFORM ${ICONS_IMAGE} AS icons-provider
 FROM --platform=$BUILDPLATFORM alpine:3.21 AS oauth2-proxy-downloader
 ARG OAUTH2_PROXY_VERSION
 ARG TARGETARCH
+# hadolint ignore=DL3018 # Pin versions in apk add
 RUN <<EO_RUN
   set -ex
+  apk add --no-cache binutils
   echo "Downloading OAuth2 Proxy ${OAUTH2_PROXY_VERSION}..."
   case "${TARGETARCH}" in
     "amd64")
@@ -80,6 +82,7 @@ RUN <<EO_RUN
   sha256sum -c checksum.txt
   tar -xzf oauth2-proxy.tar.gz
   mkdir -p /out
+  strip "oauth2-proxy-${OAUTH2_PROXY_VERSION}.${ARCH}/oauth2-proxy"
   mv "oauth2-proxy-${OAUTH2_PROXY_VERSION}.${ARCH}/oauth2-proxy" /out/
 EO_RUN
 
@@ -171,10 +174,6 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
   if [ "${WITH_DOCS}" = "true" ]; then
     PACKAGES="${PACKAGES} yelp"
   fi
-  if [ "${WITH_OAUTH2_PROXY}" = "true" ]; then
-    PACKAGES="${PACKAGES} binutils"
-  fi
-
   # shellcheck disable=SC2086 # Ignore word splitting for ${PACKAGES}
   apt-get install -y --no-install-recommends ${PACKAGES}
 
@@ -196,9 +195,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
   if [ "${WITH_OAUTH2_PROXY}" = "true" ]; then
     echo "Installing OAuth2 Proxy ${OAUTH2_PROXY_VERSION}..."
     cp /mnt/oauth2-proxy/oauth2-proxy /usr/local/bin/
-    strip /usr/local/bin/oauth2-proxy
     chmod +x /usr/local/bin/oauth2-proxy
-    REMOVE_PKGS="${REMOVE_PKGS} binutils"
   fi
 
   # shellcheck disable=SC2086 # Ignore word splitting for ${REMOVE_PKGS}

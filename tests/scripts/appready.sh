@@ -17,7 +17,7 @@ sec_fractions=10
 sleep_time=$(awk "BEGIN {print 1/${sec_fractions}}")
 
 # Give app run script some time to exec the gnucash process.
-for iter in $(eval "echo {$((timeout_sec * sec_fractions))..0}"); do
+for ((iter = timeout_sec * sec_fractions; iter >= 0; iter--)); do
   # Only care about gnucash child process of PID 1 (init),
   # not other random gnucash invocations from parallel tests.
   gnucash_pid=$(pgrep -P 1 gnucash)
