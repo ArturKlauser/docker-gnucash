@@ -77,11 +77,12 @@ getlog_container_daemon() {
 }
 
 wait_for_container_daemon() {
+  [[ -f ${HOST_COM_DIR}/appready ]] && return 0
   echo "Waiting for the docker container daemon to be ready..."
   timeout_sec=120
   sec_fractions=10
-  sleep_time=$(awk "BEGIN {print 1/${sec_fractions}}")
-  for iter in $(eval "echo {$((timeout_sec * sec_fractions))..0}"); do
+  sleep_time="0.1"
+  for ((iter=timeout_sec * sec_fractions; iter>=0; iter--)); do
     [[ -f ${HOST_COM_DIR}/appready ]] && break
     if ((iter % sec_fractions == 0)); then
       countdown=$((iter / sec_fractions))
