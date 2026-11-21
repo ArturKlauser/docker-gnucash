@@ -19,6 +19,12 @@ load utils
   assert_success
 }
 
+@test "Checking that Gnucash Python startup dependencies load..." {
+  exec_in_container /usr/bin/python3 -c \
+    'from gnucash import *; import gi; gi.require_version("Gtk", "3.0"); from gi.repository import Gtk'
+  assert_success
+}
+
 @test "Checking that Gnucash runs..." {
   # Modern Gnucash can't even print version or help messages to the TTY if it
   # can't pass its GTK GUI startup. That only works if a display is set and
