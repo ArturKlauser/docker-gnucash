@@ -117,6 +117,8 @@ ENV APP_NAME="GnuCash" \
 # - libfinance-quote-perl: Finance::Quote support.
 # - fonts-dejavu: Fonts for the GUI.
 # - adwaita-icon-theme: Icon theme.
+# - python3-gnucash, python3-gi, gir1.2-gtk-3.0: Python startup dependencies.
+# - librsvg2-common: SVG pixbuf loader for GTK theme assets.
 # - yelp: Gnome help page browser.
 #         Note that it doesn't register itself properly, so we provide a
 #         defaults config file separately in rootfs/etc/xdg/mimeapps.list
@@ -164,7 +166,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
   #     browser.
   # echo "path-include=/usr/share/doc/gnucash-docs*" \
   #   > /etc/dpkg/dpkg.cfg.d/z-gnucash-docs
-  PACKAGES="gnucash=1:${GNUCASH_VERSION}* fonts-dejavu adwaita-icon-theme"
+  PACKAGES="gnucash=1:${GNUCASH_VERSION}* fonts-dejavu adwaita-icon-theme python3-gnucash python3-gi gir1.2-gtk-3.0 librsvg2-common"
   if [ "${WITH_FINANCE_QUOTE}" = "true" ]; then
     PACKAGES="${PACKAGES} libfinance-quote-perl"
   fi
@@ -220,6 +222,8 @@ COPY --from=icons-provider /icons /opt/noVNC/app/images/icons
 
 RUN <<EO_RUN
   set -ex
+  # Windows/WSL build contexts can mark this plain-text value as executable.
+  chmod 644 /etc/cont-env.d/APP_NAME
   # Conditionally install the Yelp configuration.
   if [ "${WITH_DOCS}" = "true" ]; then
     cp -r /opt/with-docs/* /

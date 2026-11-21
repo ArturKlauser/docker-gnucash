@@ -233,6 +233,13 @@ docker run -d \
 > Docker). If needed, set `DOCKER_BUILDKIT=1`.
 
 To build the image locally:
+
+The image explicitly installs the GnuCash Python bindings, PyGObject, GTK 3
+introspection data, and the SVG pixbuf loader. These runtime dependencies are
+included even though recommended packages are disabled during installation.
+The build also sets the plain-text `APP_NAME` file to non-executable, including
+when building from a Windows filesystem mounted in WSL.
+
 ```bash
 docker buildx build \
   --build-arg BASEIMAGE_VERSION=ubuntu-24.04-v4.11.3 \

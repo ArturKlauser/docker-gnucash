@@ -8,6 +8,8 @@ load utils
 
 @test "Checking APP_NAME container environment variable..." {
   # Container-wide variable; we don't need to wait for gnucash to start.
+  exec_in_container test ! -x /etc/cont-env.d/APP_NAME
+  assert_success
   exec_in_container printenv APP_NAME
   assert_success
   assert_line --index 0 "GnuCash"
